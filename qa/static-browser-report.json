@@ -1,0 +1,81 @@
+{
+  "timestamp": "2026-09-25T10:27:37.517Z",
+  "basePath": "/cct-compute-chain/",
+  "results": [
+    {
+      "route": "#/",
+      "width": 1440,
+      "status": 200,
+      "heading": "连接算力、数据与智能体，\n持续产生业务结果。",
+      "passed": true
+    },
+    {
+      "route": "#/services",
+      "width": 1440,
+      "status": 200,
+      "heading": "从推理底座，\n到业务执行。",
+      "passed": true
+    },
+    {
+      "route": "#/opportunities",
+      "width": 1440,
+      "status": 200,
+      "heading": "全球 AI 商业信号，\n与 CCT 产品判断。",
+      "passed": true
+    },
+    {
+      "route": "#/content/market-signal-ai-infrastructure-2026",
+      "width": 1440,
+      "status": 200,
+      "heading": "AI 基础设施：收入与毛利证据最强的商业主航道",
+      "passed": true
+    },
+    {
+      "route": "#/contact",
+      "width": 1440,
+      "status": 200,
+      "heading": "好的改变，\n从一次对话开始。",
+      "passed": true
+    },
+    {
+      "route": "#/",
+      "width": 390,
+      "status": 200,
+      "heading": "连接算力、数据与智能体，\n持续产生业务结果。",
+      "passed": true
+    },
+    {
+      "route": "#/services",
+      "width": 390,
+      "status": 200,
+      "heading": "从推理底座，\n到业务执行。",
+      "passed": true
+    },
+    {
+      "route": "#/opportunities",
+      "width": 390,
+      "status": 200,
+      "heading": "全球 AI 商业信号，\n与 CCT 产品判断。",
+      "passed": true
+    },
+    {
+      "route": "#/content/market-signal-ai-infrastructure-2026",
+      "width": 390,
+      "status": 200,
+      "heading": "AI 基础设施：收入与毛利证据最强的商业主航道",
+      "passed": true
+    },
+    {
+      "route": "#/contact",
+      "width": 390,
+      "status": 200,
+      "heading": "好的改变，\n从一次对话开始。",
+      "passed": true
+    },
+    {
+      "name": "static evidence labels and zero runtime errors",
+      "passed": true
+    }
+  ],
+  "errors": []
+}

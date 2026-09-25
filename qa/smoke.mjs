@@ -21,7 +21,7 @@ const browser = await chromium.launch({ headless: true, channel: process.env.PLA
 try {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' });
   page.on('pageerror', error => errors.push(error.message));
-  const routes = ['/', '/services', '/solutions', '/ecosystem', '/insights', '/about', '/contact', '/privacy', '/terms', '/content/agent-systems', '/not-a-page'];
+  const routes = ['/', '/services', '/solutions', '/opportunities', '/ecosystem', '/insights', '/about', '/contact', '/privacy', '/terms', '/content/agent-systems', '/content/market-signal-ai-infrastructure-2026', '/not-a-page'];
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
     for (const path of routes) {
@@ -37,7 +37,7 @@ try {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(base, { waitUntil: 'networkidle' });
   await page.getByRole('button', { name: 'Switch to English' }).click();
-  await page.getByRole('heading', { level: 1 }).filter({ hasText: 'Intelligence' }).waitFor();
+  await page.getByRole('heading', { level: 1 }).filter({ hasText: 'Compute, data and agents' }).waitFor();
   await page.screenshot({ path: resolve(screenshots, 'home-en-1440.png'), fullPage: true });
   results.push({ name: 'public English language toggle', passed: true });
   await page.getByRole('button', { name: '切换为中文' }).click();
@@ -80,6 +80,12 @@ try {
     const status = await page.evaluate(() => ({ width: window.innerWidth, scroll: document.documentElement.scrollWidth, text: document.body.innerText }));
     if (status.scroll > status.width + 1) throw new Error(`Admin overflow ${path}`);
     if (path === '/admin/leads' && !status.text.includes('浏览器验收联系人')) throw new Error('Browser-submitted lead is absent from admin');
+    if (path === '/admin/content') {
+      await page.getByRole('button', { name: '创建内容', exact: true }).first().click();
+      if (!await page.getByRole('button', { name: '发布内容', exact: true }).isVisible()) throw new Error('Administrator publish control is missing');
+      await page.getByRole('button', { name: '关闭窗口', exact: true }).click();
+      results.push({ name: 'administrator publish control', passed: true });
+    }
     results.push({ name: `authenticated ${path}`, passed: true });
     if (path === '/admin/content' || path === '/admin/leads') await page.screenshot({ path: resolve(screenshots, path.includes('content') ? 'admin-content-1440.png' : 'admin-leads-1440.png'), fullPage: true });
   }

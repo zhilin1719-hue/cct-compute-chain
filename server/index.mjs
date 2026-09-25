@@ -10,6 +10,11 @@ import { COOKIE_NAME, SESSION_DURATION_MS, hashPassword, verifyPassword, newSess
 
 const emailSchema = z.string().trim().email('请输入有效的邮箱地址。').max(254).transform((value) => value.toLowerCase());
 const passwordSchema = z.string().min(12, '密码至少需要 12 个字符。').max(128, '密码不能超过 128 个字符。');
+const sourceDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((value) => {
+  const [year, month, day] = value.split('-').map(Number);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  return parsed.getUTCFullYear() === year && parsed.getUTCMonth() === month - 1 && parsed.getUTCDate() === day;
+}, '来源日期必须是真实的日历日期。');
 const contentSchema = z.object({
   type: z.enum(['service', 'solution', 'insight']),
   slug: z.string().trim().min(2).max(100).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Slug 仅允许小写英文、数字和连字符。'),
@@ -20,8 +25,20 @@ const contentSchema = z.object({
   body: z.string().trim().min(1).max(40000),
   bodyEn: z.string().trim().min(1).max(60000),
   category: z.string().trim().min(1).max(80),
+  claimScope: z.enum(['cct', 'market', 'proposal']).default('cct'),
+  evidenceLevel: z.enum(['internal', 'official', 'external', 'unverified']).default('internal'),
+  sourceLabel: z.string().trim().max(200).default(''),
+  sourceUrl: z.union([z.literal(''), z.string().trim().url().max(2000)]).default('').refine((value) => !value || new URL(value).protocol === 'https:', '公开来源链接必须使用 HTTPS。'),
+  sourceDate: z.union([z.literal(''), sourceDateSchema]).default(''),
   status: z.enum(['draft', 'published']).default('draft'),
   featured: z.boolean().default(false),
+}).superRefine((value, context) => {
+  if (value.status === 'published' && value.evidenceLevel === 'unverified') {
+    context.addIssue({ code: 'custom', path: ['evidenceLevel'], message: '未核验内容不能发布，请先补充证据并更新证据等级。' });
+  }
+  if (value.status === 'published' && value.claimScope === 'market' && (!value.sourceLabel || !value.sourceUrl || !value.sourceDate || value.evidenceLevel !== 'official')) {
+    context.addIssue({ code: 'custom', path: ['sourceUrl'], message: '市场信号发布前必须填写官方来源名称、链接、日期，并将证据等级设为官方一手来源。' });
+  }
 });
 const leadSchema = z.object({
   name: z.string().trim().min(1).max(80),
@@ -229,24 +246,33 @@ export function createApp(options = {}) {
   });
   app.post('/api/admin/content', (req, res) => {
     const input = contentSchema.parse(req.body);
+    if (input.status === 'published' && req.auth.user.role !== 'admin') throw new HttpError(403, '内容发布需要管理员复核；编辑可先保存草稿。');
     const id = randomUUID();
     const now = new Date().toISOString();
     transaction(db, () => {
-      db.prepare(`INSERT INTO content (id, type, slug, title, title_en, summary, summary_en, body, body_en, category, status, featured, created_at, updated_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(id, input.type, input.slug, input.title, input.titleEn, input.summary, input.summaryEn, input.body, input.bodyEn, input.category, input.status, Number(input.featured), now, now);
-      audit(db, req.auth.user, 'content.created', 'content', id, { slug: input.slug, status: input.status });
+      db.prepare(`INSERT INTO content (id, type, slug, title, title_en, summary, summary_en, body, body_en, category, claim_scope, evidence_level, source_label, source_url, source_date, status, featured, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(id, input.type, input.slug, input.title, input.titleEn, input.summary, input.summaryEn, input.body, input.bodyEn, input.category, input.claimScope, input.evidenceLevel, input.sourceLabel, input.sourceUrl, input.sourceDate, input.status, Number(input.featured), now, now);
+      audit(db, req.auth.user, 'content.created', 'content', id, { slug: input.slug, status: input.status, claimScope: input.claimScope, evidenceLevel: input.evidenceLevel, sourceLabel: input.sourceLabel, sourceUrl: input.sourceUrl, sourceDate: input.sourceDate });
     });
     res.status(201).json({ item: contentRecord(db.prepare('SELECT * FROM content WHERE id = ?').get(id)) });
   });
   app.put('/api/admin/content/:id', (req, res) => {
     const id = idSchema.parse(req.params.id);
     const input = contentSchema.parse(req.body);
+    if (input.status === 'published' && req.auth.user.role !== 'admin') throw new HttpError(403, '内容发布需要管理员复核；编辑可先保存草稿。');
     const previous = db.prepare('SELECT * FROM content WHERE id = ?').get(id);
     if (!previous) throw new HttpError(404, '内容不存在。');
     transaction(db, () => {
-      db.prepare(`UPDATE content SET type = ?, slug = ?, title = ?, title_en = ?, summary = ?, summary_en = ?, body = ?, body_en = ?, category = ?, status = ?, featured = ?, updated_at = ? WHERE id = ?`)
-        .run(input.type, input.slug, input.title, input.titleEn, input.summary, input.summaryEn, input.body, input.bodyEn, input.category, input.status, Number(input.featured), new Date().toISOString(), id);
-      audit(db, req.auth.user, 'content.updated', 'content', id, { slug: input.slug, previousStatus: previous.status, status: input.status });
+      db.prepare(`UPDATE content SET type = ?, slug = ?, title = ?, title_en = ?, summary = ?, summary_en = ?, body = ?, body_en = ?, category = ?, claim_scope = ?, evidence_level = ?, source_label = ?, source_url = ?, source_date = ?, status = ?, featured = ?, updated_at = ? WHERE id = ?`)
+        .run(input.type, input.slug, input.title, input.titleEn, input.summary, input.summaryEn, input.body, input.bodyEn, input.category, input.claimScope, input.evidenceLevel, input.sourceLabel, input.sourceUrl, input.sourceDate, input.status, Number(input.featured), new Date().toISOString(), id);
+      audit(db, req.auth.user, 'content.updated', 'content', id, {
+        slug: input.slug, previousStatus: previous.status, status: input.status,
+        previousClaimScope: previous.claim_scope, claimScope: input.claimScope,
+        previousEvidenceLevel: previous.evidence_level, evidenceLevel: input.evidenceLevel,
+        previousSourceLabel: previous.source_label, sourceLabel: input.sourceLabel,
+        previousSourceUrl: previous.source_url, sourceUrl: input.sourceUrl,
+        previousSourceDate: previous.source_date, sourceDate: input.sourceDate,
+      });
     });
     res.json({ item: contentRecord(db.prepare('SELECT * FROM content WHERE id = ?').get(id)) });
   });
@@ -340,7 +366,7 @@ export function createApp(options = {}) {
   });
 
   app.use('/api', (_req, _res, next) => next(new HttpError(404, '接口不存在。')));
-  const distribution = resolve(projectDirectory, 'dist');
+  const distribution = resolve(options.distribution || projectDirectory, options.distribution ? '.' : 'dist');
   if (existsSync(resolve(distribution, 'index.html'))) {
     const respondPage = registerSeo(app, db, distribution, primaryOrigin);
     app.use(express.static(distribution, { index: false, maxAge: 0 }));

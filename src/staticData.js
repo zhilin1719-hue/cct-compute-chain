@@ -10,5 +10,7 @@ export const staticBootstrap = {
     createdAt: publishedAt,
     updatedAt: publishedAt,
     ...item,
+    claimScope: item.claimScope || 'cct', evidenceLevel: item.evidenceLevel || 'internal',
+    sourceLabel: item.sourceLabel || '', sourceUrl: item.sourceUrl || '', sourceDate: item.sourceDate || '',
   })),
 };

@@ -32,12 +32,14 @@ jobs:
         env:
           VITE_STATIC_SITE: 'true'
           VITE_BASE_PATH: /cct-compute-chain/
+      - run: pnpm exec playwright install --with-deps chrome
+      - run: pnpm test:static
       - uses: actions/configure-pages@v5
         with:
           enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: dist-pages
   deploy:
     environment:
       name: github-pages

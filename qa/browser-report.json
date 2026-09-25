@@ -1,24 +1,30 @@
 {
-  "timestamp": "2026-09-25T05:04:04.748Z",
+  "timestamp": "2026-09-25T10:27:32.723Z",
   "isolatedDatabase": true,
   "results": [
     {
       "name": "public / @ 1440",
       "passed": true,
       "status": 200,
-      "heading": "让智能，\n成为生产力。"
+      "heading": "连接算力、数据与智能体，\n持续产生业务结果。"
     },
     {
       "name": "public /services @ 1440",
       "passed": true,
       "status": 200,
-      "heading": "技术向前，\n价值落地。"
+      "heading": "从推理底座，\n到业务执行。"
     },
     {
       "name": "public /solutions @ 1440",
       "passed": true,
       "status": 200,
       "heading": "让每一个场景，\n拥有智能的解法。"
+    },
+    {
+      "name": "public /opportunities @ 1440",
+      "passed": true,
+      "status": 200,
+      "heading": "全球 AI 商业信号，\n与 CCT 产品判断。"
     },
     {
       "name": "public /ecosystem @ 1440",
@@ -63,6 +69,12 @@
       "heading": "智能体与工作流"
     },
     {
+      "name": "public /content/market-signal-ai-infrastructure-2026 @ 1440",
+      "passed": true,
+      "status": 200,
+      "heading": "AI 基础设施：收入与毛利证据最强的商业主航道"
+    },
+    {
       "name": "public /not-a-page @ 1440",
       "passed": true,
       "status": 404,
@@ -72,19 +84,25 @@
       "name": "public / @ 390",
       "passed": true,
       "status": 200,
-      "heading": "让智能，\n成为生产力。"
+      "heading": "连接算力、数据与智能体，\n持续产生业务结果。"
     },
     {
       "name": "public /services @ 390",
       "passed": true,
       "status": 200,
-      "heading": "技术向前，\n价值落地。"
+      "heading": "从推理底座，\n到业务执行。"
     },
     {
       "name": "public /solutions @ 390",
       "passed": true,
       "status": 200,
       "heading": "让每一个场景，\n拥有智能的解法。"
+    },
+    {
+      "name": "public /opportunities @ 390",
+      "passed": true,
+      "status": 200,
+      "heading": "全球 AI 商业信号，\n与 CCT 产品判断。"
     },
     {
       "name": "public /ecosystem @ 390",
@@ -129,6 +147,12 @@
       "heading": "智能体与工作流"
     },
     {
+      "name": "public /content/market-signal-ai-infrastructure-2026 @ 390",
+      "passed": true,
+      "status": 200,
+      "heading": "AI 基础设施：收入与毛利证据最强的商业主航道"
+    },
+    {
       "name": "public /not-a-page @ 390",
       "passed": true,
       "status": 404,
@@ -144,6 +168,10 @@
     },
     {
       "name": "administrator browser login",
+      "passed": true
+    },
+    {
+      "name": "administrator publish control",
       "passed": true
     },
     {

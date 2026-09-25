@@ -1,10 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { once } from 'node:events';
+import { DatabaseSync } from 'node:sqlite';
 import { createApp } from '../server/index.mjs';
+import { openDatabase } from '../server/db.mjs';
+import { initialContent } from '../server/seed.mjs';
 
 const adminEmail = 'admin@test.example';
 const adminPassword = 'Test-Only-Password-7942!';
@@ -23,7 +26,10 @@ const validLead = {
 async function fixture(t, extra = {}) {
   const directory = mkdtempSync(join(tmpdir(), 'cct-backend-'));
   const dbPath = join(directory, 'test.sqlite');
-  const app = createApp({ dbPath, bootstrapEmail: adminEmail, bootstrapPassword: adminPassword, production: false, publicOrigin: null, ...extra });
+  const distribution = join(directory, 'dist');
+  mkdirSync(distribution);
+  writeFileSync(join(distribution, 'index.html'), '<!doctype html><html lang="zh-CN"><head><meta name="description" content="test" /><meta property="og:type" content="website" /><meta property="og:title" content="test" /><meta property="og:description" content="test" /><title>test</title></head><body><div id="root"></div></body></html>');
+  const app = createApp({ dbPath, distribution, bootstrapEmail: adminEmail, bootstrapPassword: adminPassword, production: false, publicOrigin: null, ...extra });
   const server = app.listen(0, '127.0.0.1');
   await once(server, 'listening');
   const base = `http://127.0.0.1:${server.address().port}`;
@@ -64,7 +70,7 @@ test('health and published bootstrap expose useful bilingual content without cre
   assert.deepEqual(health.data, { status: 'ok', database: 'connected' });
   const result = await f.request('/api/public/bootstrap');
   assert.equal(result.status, 200);
-  assert.equal(result.data.content.length, 11);
+  assert.equal(result.data.content.length, initialContent.length);
   assert.equal(result.data.settings.brandName, 'CCT 算链集团');
   assert.equal(result.data.settings.contactEmail, 'contact@cct.example');
   assert.ok(result.data.content.every((item) => item.status === 'published' && item.body && item.bodyEn));
@@ -72,6 +78,11 @@ test('health and published bootstrap expose useful bilingual content without cre
   assert.equal(result.response.headers.get('x-content-type-options'), 'nosniff');
   assert.equal(result.response.headers.get('x-frame-options'), 'DENY');
   assert.match(result.response.headers.get('content-security-policy'), /frame-ancestors 'none'/);
+  const articleResponse = await fetch(f.base + '/content/market-signal-ai-infrastructure-2026', { headers: { Accept: 'text/html' } });
+  const articleHtml = await articleResponse.text();
+  assert.equal((articleHtml.match(/property="og:title"/g) || []).length, 1);
+  assert.equal((articleHtml.match(/property="og:description"/g) || []).length, 1);
+  assert.match(articleHtml, /AI 基础设施：收入与毛利证据最强的商业主航道 · CCT 算链集团/);
 });
 
 test('every administration resource rejects unauthenticated requests', async (t) => {
@@ -140,6 +151,32 @@ test('content drafts remain private, publication becomes public, and deletion pe
   assert.equal((await f.request(`/api/admin/content/${id}`, { method: 'DELETE' })).status, 404);
 });
 
+test('evidence gates block unverified publication and require official metadata for market signals', async (t) => {
+  const f = await fixture(t);
+  await f.login();
+  const unverified = await f.request('/api/admin/content', { method: 'POST', body: { ...draftContent, slug: 'unverified-claim', status: 'published', evidenceLevel: 'unverified' } });
+  assert.equal(unverified.status, 400);
+  assert.ok(unverified.data.fields.evidenceLevel);
+  const marketDraft = await f.request('/api/admin/content', { method: 'POST', body: { ...draftContent, slug: 'market-draft', claimScope: 'market', evidenceLevel: 'unverified' } });
+  assert.equal(marketDraft.status, 201, JSON.stringify(marketDraft.data));
+  const missingSource = await f.request('/api/admin/content', { method: 'POST', body: { ...draftContent, slug: 'market-without-source', status: 'published', claimScope: 'market', evidenceLevel: 'official' } });
+  assert.equal(missingSource.status, 400);
+  assert.ok(missingSource.data.fields.sourceUrl);
+  const invalidDate = await f.request('/api/admin/content', { method: 'POST', body: { ...draftContent, slug: 'invalid-market-date', status: 'published', claimScope: 'market', evidenceLevel: 'official', sourceLabel: 'Official test publisher', sourceUrl: 'https://example.test/evidence', sourceDate: '2026-02-31' } });
+  assert.equal(invalidDate.status, 400);
+  assert.ok(invalidDate.data.fields.sourceDate);
+  const unsafeUrl = await f.request('/api/admin/content', { method: 'POST', body: { ...draftContent, slug: 'unsafe-market-url', status: 'published', claimScope: 'market', evidenceLevel: 'official', sourceLabel: 'Unsafe publisher', sourceUrl: 'javascript:alert(1)', sourceDate: '2026-09-25' } });
+  assert.equal(unsafeUrl.status, 400);
+  assert.ok(unsafeUrl.data.fields.sourceUrl);
+  const validMarket = await f.request('/api/admin/content', { method: 'POST', body: { ...draftContent, slug: 'verified-market-signal', status: 'published', claimScope: 'market', evidenceLevel: 'official', sourceLabel: 'Official test publisher', sourceUrl: 'https://example.test/evidence', sourceDate: '2026-09-25' } });
+  assert.equal(validMarket.status, 201, JSON.stringify(validMarket.data));
+  const publicItem = (await f.request('/api/public/content/verified-market-signal')).data.item;
+  assert.equal(publicItem.claimScope, 'market');
+  assert.equal(publicItem.evidenceLevel, 'official');
+  assert.equal(publicItem.sourceDate, '2026-09-25');
+  assert.equal(publicItem.sourceUrl, 'https://example.test/evidence');
+});
+
 test('lead validation enforces consent and email, and accepted leads survive a second database connection', async (t) => {
   const f = await fixture(t);
   const invalidConsent = await f.request('/api/public/leads', { method: 'POST', body: { ...validLead, consent: false } });
@@ -182,6 +219,7 @@ test('editor role can manage content and leads but cannot access users, settings
   for (const resource of ['users', 'settings', 'audit']) assert.equal((await f.request(`/api/admin/${resource}`)).status, 403, resource);
   assert.equal((await f.request('/api/admin/settings', { method: 'PUT', body: { brandName: 'Forbidden' } })).status, 403);
   assert.equal((await f.request('/api/admin/content', { method: 'POST', body: draftContent })).status, 201);
+  assert.equal((await f.request('/api/admin/content', { method: 'POST', body: { ...draftContent, slug: 'editor-cannot-publish', status: 'published' } })).status, 403);
   await f.login();
   const events = (await f.request('/api/admin/audit')).data.items;
   assert.ok(events.some((entry) => entry.action === 'content.created' && entry.actorEmail === 'editor@test.example'));
@@ -286,6 +324,39 @@ test('settings changes persist publicly and rejected values cannot overwrite app
   assert.equal((await f.request('/api/admin/settings', { method: 'PUT', body: { contactEmail: 'invalid' } })).status, 400);
   const events = (await f.request('/api/admin/audit')).data.items;
   assert.ok(events.some((event) => event.action === 'settings.updated' && event.details.fields.includes('heroTitle')));
+});
+
+test('v1 migration quarantines edited legacy content and only adds new v2 seed records', (t) => {
+  const dbPath = join(tmpdir(), `cct-migration-${process.pid}-${Date.now()}.sqlite`);
+  t.after(async () => {
+    await new Promise((resolveDelay) => setTimeout(resolveDelay, 500));
+    for (const suffix of ['', '-wal', '-shm']) rmSync(dbPath + suffix, { force: true, maxRetries: 5, retryDelay: 50 });
+  });
+    const currentSchema = readFileSync(resolve(import.meta.dirname, '../server/schema.sql'), 'utf8');
+    const legacySchema = currentSchema.split(/\r?\n/)
+      .filter((line) => !/\b(claim_scope|evidence_level|source_label|source_url|source_date)\b/.test(line))
+      .join('\n').replace('PRAGMA user_version = 2;', 'PRAGMA user_version = 1;');
+    const legacy = new DatabaseSync(dbPath);
+    legacy.exec(legacySchema);
+    const insert = legacy.prepare(`INSERT INTO content
+      (id,type,slug,title,title_en,summary,summary_en,body,body_en,category,status,featured,created_at,updated_at)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
+    const add = (item, title = item.title) => insert.run(item.slug, item.type, item.slug, title, item.titleEn, item.summary, item.summaryEn, item.body, item.bodyEn, item.category, 'published', Number(item.featured), '2026-01-01T00:00:00.000Z', '2026-01-01T00:00:00.000Z');
+    add(initialContent.find((item) => item.slug === 'ai-transformation'));
+    add(initialContent.find((item) => item.slug === 'agent-systems'), '全球最大、100%合规');
+    legacy.close();
+
+    const migrated = openDatabase({ dbPath, seed: true });
+    assert.equal(migrated.prepare('PRAGMA user_version').get().user_version, 2);
+    const safe = migrated.prepare("SELECT status,evidence_level FROM content WHERE slug='ai-transformation'").get();
+    assert.deepEqual({ ...safe }, { status: 'published', evidence_level: 'internal' });
+    const edited = migrated.prepare("SELECT status,evidence_level FROM content WHERE slug='agent-systems'").get();
+    assert.deepEqual({ ...edited }, { status: 'draft', evidence_level: 'unverified' });
+    assert.equal(migrated.prepare("SELECT COUNT(*) AS count FROM content WHERE slug='compute-infrastructure'").get().count, 0);
+    assert.equal(migrated.prepare("SELECT COUNT(*) AS count FROM content WHERE slug='inference-fabric'").get().count, 1);
+    assert.equal(migrated.prepare('SELECT COUNT(*) AS count FROM content').get().count, 16);
+    migrated.exec('PRAGMA wal_checkpoint(TRUNCATE); PRAGMA journal_mode = DELETE;');
+    migrated.close();
 });
 
 test('production cookies are Secure and deleting seed content is not undone by reopening the database', async (t) => {

@@ -29,6 +29,11 @@ CREATE TABLE IF NOT EXISTS content (
   body TEXT NOT NULL,
   body_en TEXT NOT NULL,
   category TEXT NOT NULL,
+  claim_scope TEXT NOT NULL DEFAULT 'cct' CHECK (claim_scope IN ('cct', 'market', 'proposal')),
+  evidence_level TEXT NOT NULL DEFAULT 'internal' CHECK (evidence_level IN ('internal', 'official', 'external', 'unverified')),
+  source_label TEXT NOT NULL DEFAULT '',
+  source_url TEXT NOT NULL DEFAULT '',
+  source_date TEXT NOT NULL DEFAULT '',
   status TEXT NOT NULL CHECK (status IN ('draft', 'published')),
   featured INTEGER NOT NULL DEFAULT 0 CHECK (featured IN (0, 1)),
   created_at TEXT NOT NULL,
@@ -70,4 +75,4 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 );
 CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_logs(created_at);
 
-PRAGMA user_version = 1;
+PRAGMA user_version = 2;

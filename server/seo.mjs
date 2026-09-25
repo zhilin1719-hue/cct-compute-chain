@@ -3,9 +3,10 @@ import { resolve } from 'node:path';
 
 export const escapeHtml = (value = '') => String(value).replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
 const pages = {
-  '/': ['让智能成为生产力', '连接 AI、算力与产业场景，探索可部署、可治理、可持续进化的智能系统。'],
-  '/services': ['业务能力', '企业 AI 转型、智能体工作流、算力基础设施和产业数字化。'],
+  '/': ['AI Industrial Network', '连接推理基础设施、企业数据、智能体、行业系统与可信治理，形成可评测、可审计、可计量的生产路径。'],
+  '/services': ['产品能力', '推理基础设施、企业智能体、私有 AI、治理控制平面、算能协同与产业数字化产品。'],
   '/solutions': ['行业解决方案', '从具体业务场景出发，探索教育、电商、产业与低空应用的智能化路径。'],
+  '/opportunities': ['全球 AI 市场信号', '来自企业投资者关系和权威机构的 AI 基础设施、智能体、行业 AI、能源与治理市场信号。'],
   '/ecosystem': ['生态合作', '连接技术、产业与生态伙伴，共同验证场景和创造价值。'],
   '/insights': ['前沿洞察', '关于 AI、算力和智能体落地的思考与方法。'],
   '/about': ['关于 CCT', '了解 CCT 算链的方向、价值观与业务愿景。'],
@@ -38,10 +39,11 @@ export function registerSeo(app, db, distribution, origin) {
     const path = req.path.replace(/\/$/, '') || '/';
     const admin = path === '/admin' || path.startsWith('/admin/');
     let metadata = pages[path];
+    let article = null;
     if (path.startsWith('/content/')) {
       const slug = path.slice('/content/'.length);
-      const row = db.prepare("SELECT title, summary FROM content WHERE slug=? AND status='published'").get(slug);
-      if (row) metadata = [row.title, row.summary];
+      article = db.prepare("SELECT title, summary, category, created_at, updated_at, source_url FROM content WHERE slug=? AND status='published'").get(slug);
+      if (article) metadata = [article.title, article.summary];
     }
     const missing = !metadata && !admin;
     if (admin) metadata = ['运营管理后台', 'CCT 网站运营管理'];
@@ -55,9 +57,20 @@ export function registerSeo(app, db, distribution, origin) {
       `<meta name="robots" content="${admin || missing || !canonical ? 'noindex,nofollow' : 'index,follow'}" />`,
     ];
     if (canonical && !admin && !missing) tags.push(`<link rel="canonical" href="${escapeHtml(canonical + path)}" />`);
+    if (!admin && !missing) {
+      const structured = article ? {
+        '@context': 'https://schema.org', '@type': 'TechArticle', headline: article.title, description: article.summary,
+        datePublished: article.created_at, dateModified: article.updated_at, articleSection: article.category,
+        author: { '@type': 'Organization', name: brand }, publisher: { '@type': 'Organization', name: brand },
+        ...(canonical ? { mainEntityOfPage: canonical + path } : {}), ...(article.source_url ? { citation: article.source_url } : {}),
+      } : { '@context': 'https://schema.org', '@type': 'WebSite', name: brand, ...(canonical ? { url: canonical + path } : {}) };
+      const safeJson = JSON.stringify(structured).replace(/</g, '\\u003c');
+      tags.push(`<script type="application/ld+json">${safeJson}</script>`);
+    }
     const html = readFileSync(resolve(distribution, 'index.html'), 'utf8')
       .replace(/<title>.*?<\/title>/s, `<title>${escapeHtml(title)}</title>`)
       .replace(/<meta name="description" content="[^"]*"\s*\/>/, `<meta name="description" content="${escapeHtml(metadata[1])}" />`)
+      .replace(/\s*<meta property="og:(?:type|title|description)" content="[^"]*"\s*\/>/g, '')
       .replace('</head>', `${tags.join('\n')}\n</head>`);
     res.status(missing ? 404 : 200).set('Cache-Control', 'no-cache').type('html').send(html);
   };
