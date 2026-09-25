@@ -1,0 +1,20 @@
+services:
+  cct:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:4173:4173"
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 4173
+      DATABASE_PATH: /app/data/cct.sqlite
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:?Set the real HTTPS origin}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?Set administrator email}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Set a unique administrator password}
+    volumes:
+      - cct-data:/app/data
+      - cct-backups:/app/backups
+volumes:
+  cct-data:
+  cct-backups:

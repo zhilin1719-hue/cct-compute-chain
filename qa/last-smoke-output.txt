@@ -1,0 +1,183 @@
+{
+  "timestamp": "2026-09-24T21:45:17.863Z",
+  "isolatedDatabase": true,
+  "results": [
+    {
+      "name": "public / @ 1440",
+      "passed": true,
+      "status": 200,
+      "heading": "让智能，\n成为生产力。"
+    },
+    {
+      "name": "public /services @ 1440",
+      "passed": true,
+      "status": 200,
+      "heading": "技术向前，\n价值落地。"
+    },
+    {
+      "name": "public /solutions @ 1440",
+      "passed": true,
+      "status": 200,
+      "heading": "让每一个场景，\n拥有智能的解法。"
+    },
+    {
+      "name": "public /ecosystem @ 1440",
+      "passed": true,
+      "status": 200,
+      "heading": "连接彼此的优势，\n拓展共同的边界。"
+    },
+    {
+      "name": "public /insights @ 1440",
+      "passed": true,
+      "status": 200,
+      "heading": "看见变化，\n思考未来。"
+    },
+    {
+      "name": "public /about @ 1440",
+      "passed": true,
+      "status": 200,
+      "heading": "让技术的可能，\n成为产业的日常。"
+    },
+    {
+      "name": "public /contact @ 1440",
+      "passed": true,
+      "status": 200,
+      "heading": "好的改变，\n从一次对话开始。"
+    },
+    {
+      "name": "public /privacy @ 1440",
+      "passed": true,
+      "status": 200,
+      "heading": "尊重每一份信任。"
+    },
+    {
+      "name": "public /terms @ 1440",
+      "passed": true,
+      "status": 200,
+      "heading": "清晰的规则，\n可信的连接。"
+    },
+    {
+      "name": "public /content/agent-systems @ 1440",
+      "passed": true,
+      "status": 200,
+      "heading": "智能体与工作流"
+    },
+    {
+      "name": "public /not-a-page @ 1440",
+      "passed": true,
+      "status": 404,
+      "heading": "这个坐标，\n暂时没有内容。"
+    },
+    {
+      "name": "public / @ 390",
+      "passed": true,
+      "status": 200,
+      "heading": "让智能，\n成为生产力。"
+    },
+    {
+      "name": "public /services @ 390",
+      "passed": true,
+      "status": 200,
+      "heading": "技术向前，\n价值落地。"
+    },
+    {
+      "name": "public /solutions @ 390",
+      "passed": true,
+      "status": 200,
+      "heading": "让每一个场景，\n拥有智能的解法。"
+    },
+    {
+      "name": "public /ecosystem @ 390",
+      "passed": true,
+      "status": 200,
+      "heading": "连接彼此的优势，\n拓展共同的边界。"
+    },
+    {
+      "name": "public /insights @ 390",
+      "passed": true,
+      "status": 200,
+      "heading": "看见变化，\n思考未来。"
+    },
+    {
+      "name": "public /about @ 390",
+      "passed": true,
+      "status": 200,
+      "heading": "让技术的可能，\n成为产业的日常。"
+    },
+    {
+      "name": "public /contact @ 390",
+      "passed": true,
+      "status": 200,
+      "heading": "好的改变，\n从一次对话开始。"
+    },
+    {
+      "name": "public /privacy @ 390",
+      "passed": true,
+      "status": 200,
+      "heading": "尊重每一份信任。"
+    },
+    {
+      "name": "public /terms @ 390",
+      "passed": true,
+      "status": 200,
+      "heading": "清晰的规则，\n可信的连接。"
+    },
+    {
+      "name": "public /content/agent-systems @ 390",
+      "passed": true,
+      "status": 200,
+      "heading": "智能体与工作流"
+    },
+    {
+      "name": "public /not-a-page @ 390",
+      "passed": true,
+      "status": 404,
+      "heading": "这个坐标，\n暂时没有内容。"
+    },
+    {
+      "name": "public English language toggle",
+      "passed": true
+    },
+    {
+      "name": "public contact submitted through browser into SQLite",
+      "passed": true
+    },
+    {
+      "name": "administrator browser login",
+      "passed": true
+    },
+    {
+      "name": "authenticated /admin/content",
+      "passed": true
+    },
+    {
+      "name": "authenticated /admin/leads",
+      "passed": true
+    },
+    {
+      "name": "authenticated /admin/settings",
+      "passed": true
+    },
+    {
+      "name": "authenticated /admin/users",
+      "passed": true
+    },
+    {
+      "name": "authenticated /admin/audit",
+      "passed": true
+    },
+    {
+      "name": "authenticated /admin/account",
+      "passed": true
+    },
+    {
+      "name": "mobile administrator dashboard",
+      "passed": true
+    },
+    {
+      "name": "zero uncaught browser JavaScript errors",
+      "passed": true
+    }
+  ],
+  "errors": []
+}
