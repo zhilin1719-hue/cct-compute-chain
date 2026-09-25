@@ -36,6 +36,14 @@ try {
   }
   await page.goto(base + '#/opportunities', { waitUntil: 'networkidle' });
   if (!await page.getByText('外部市场数据', { exact: true }).first().isVisible()) throw new Error('Market evidence label is not visible on the static site.');
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto(base + '#/', { waitUntil: 'networkidle' });
+  await page.locator('.site-scroll-link').click();
+  if (!page.url().endsWith('#/')) throw new Error('Section scrolling must not overwrite the Pages hash route.');
+  await page.locator('.site-skip').focus();
+  await page.locator('.site-skip').press('Enter');
+  if (!await page.locator('#site-main').evaluate(element => element === document.activeElement)) throw new Error('Skip link must focus main content.');
+  if (!page.url().endsWith('#/')) throw new Error('Skip link must not overwrite the Pages hash route.');
   if (report.errors.length) throw new Error(`Static browser runtime errors: ${report.errors.join('; ')}`);
   report.results.push({ name: 'static evidence labels and zero runtime errors', passed: true });
 } catch (error) {
