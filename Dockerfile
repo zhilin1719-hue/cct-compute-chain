@@ -4,6 +4,7 @@ COPY package.json pnpm-lock.yaml ./
 RUN npm install --global pnpm@11.19.0 && pnpm install --frozen-lockfile
 COPY index.html vite.config.js ./
 COPY src ./src
+COPY server ./server
 COPY public ./public
 RUN pnpm build && pnpm prune --prod
 

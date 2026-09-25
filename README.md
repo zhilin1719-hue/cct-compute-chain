@@ -10,6 +10,12 @@
 
 ## GitHub Pages 永久公开链接
 
+- 公开展示地址：https://zhilin1719-hue.github.io/cct-compute-chain/
+- 源码仓库：https://github.com/zhilin1719-hue/cct-compute-chain
+- 发布状态：https://github.com/zhilin1719-hue/cct-compute-chain/actions
+
+该地址由 GitHub Pages 持续托管；可用性取决于仓库、账号和平台服务的持续维护。动态版输出到 `dist/`，Pages 版输出到 `dist-pages/`，两个构建相互独立。
+
 仓库包含 `.github/workflows/deploy-pages.yml`。推送到 `main` 后，GitHub Actions 会运行后端测试、构建静态官网并发布 Pages。公开构建使用 Hash Router 和 `/cct-compute-chain/` 子路径，可直接刷新首页及所有前台路由。
 
 GitHub Pages 只承载公开官网展示端，不运行 Node.js、SQLite、管理后台或咨询入库。公开版因此不显示可填写的咨询表单，也不采集联系信息。完整后台、API 和数据库继续由本项目的 Docker/Node 部署方式运行；启用正式咨询前需要确认正式域名、HTTPS、业务邮箱和受控服务端。
