@@ -366,7 +366,7 @@ test('brand refresh upgrades untouched titles and preserves independently custom
   } finally { reopened.close(); }
 });
 
-test('v1 migration quarantines edited legacy content and only adds new v2 seed records', (t) => {
+test('v1 migration quarantines edited legacy content and adds reviewed seed records through v3', (t) => {
   const dbPath = join(tmpdir(), `cct-migration-${process.pid}-${Date.now()}.sqlite`);
   t.after(async () => {
     await new Promise((resolveDelay) => setTimeout(resolveDelay, 500));
@@ -375,7 +375,7 @@ test('v1 migration quarantines edited legacy content and only adds new v2 seed r
     const currentSchema = readFileSync(resolve(import.meta.dirname, '../server/schema.sql'), 'utf8');
     const legacySchema = currentSchema.split(/\r?\n/)
       .filter((line) => !/\b(claim_scope|evidence_level|source_label|source_url|source_date)\b/.test(line))
-      .join('\n').replace('PRAGMA user_version = 2;', 'PRAGMA user_version = 1;');
+      .join('\n').replace('PRAGMA user_version = 3;', 'PRAGMA user_version = 1;');
     const legacy = new DatabaseSync(dbPath);
     legacy.exec(legacySchema);
     const insert = legacy.prepare(`INSERT INTO content
@@ -387,16 +387,41 @@ test('v1 migration quarantines edited legacy content and only adds new v2 seed r
     legacy.close();
 
     const migrated = openDatabase({ dbPath, seed: true });
-    assert.equal(migrated.prepare('PRAGMA user_version').get().user_version, 2);
+    assert.equal(migrated.prepare('PRAGMA user_version').get().user_version, 3);
     const safe = migrated.prepare("SELECT status,evidence_level FROM content WHERE slug='ai-transformation'").get();
     assert.deepEqual({ ...safe }, { status: 'published', evidence_level: 'internal' });
     const edited = migrated.prepare("SELECT status,evidence_level FROM content WHERE slug='agent-systems'").get();
     assert.deepEqual({ ...edited }, { status: 'draft', evidence_level: 'unverified' });
     assert.equal(migrated.prepare("SELECT COUNT(*) AS count FROM content WHERE slug='compute-infrastructure'").get().count, 0);
     assert.equal(migrated.prepare("SELECT COUNT(*) AS count FROM content WHERE slug='inference-fabric'").get().count, 1);
-    assert.equal(migrated.prepare('SELECT COUNT(*) AS count FROM content').get().count, 16);
+    // Two legacy rows remain and nine other legacy-safe rows are deliberately not backfilled.
+    assert.equal(migrated.prepare('SELECT COUNT(*) AS count FROM content').get().count, initialContent.length - 9);
     migrated.exec('PRAGMA wal_checkpoint(TRUNCATE); PRAGMA journal_mode = DELETE;');
     migrated.close();
+});
+
+test('v2 databases receive the new business expansion once without restoring deleted legacy content', (t) => {
+  const dbPath = join(tmpdir(), `cct-business-expansion-${process.pid}-${Date.now()}.sqlite`);
+  t.after(() => {
+    for (const suffix of ['', '-wal', '-shm']) rmSync(dbPath + suffix, { force: true, maxRetries: 5, retryDelay: 50 });
+  });
+  const schemaV2 = readFileSync(resolve(import.meta.dirname, '../server/schema.sql'), 'utf8')
+    .replace('PRAGMA user_version = 3;', 'PRAGMA user_version = 2;');
+  const existing = new DatabaseSync(dbPath);
+  existing.exec(schemaV2);
+  existing.close();
+
+  const expanded = openDatabase({ dbPath, seed: true });
+  assert.equal(expanded.prepare('PRAGMA user_version').get().user_version, 3);
+  assert.equal(expanded.prepare("SELECT COUNT(*) AS count FROM content WHERE slug='ai-series-studio'").get().count, 1);
+  assert.equal(expanded.prepare("SELECT COUNT(*) AS count FROM content WHERE slug='market-signal-ai-video-2026'").get().count, 1);
+  assert.equal(expanded.prepare("SELECT COUNT(*) AS count FROM content WHERE slug='ai-transformation'").get().count, 0);
+  assert.equal(expanded.prepare('SELECT COUNT(*) AS count FROM content').get().count, 11);
+  expanded.close();
+
+  const reopened = openDatabase({ dbPath, seed: true });
+  assert.equal(reopened.prepare('SELECT COUNT(*) AS count FROM content').get().count, 11);
+  reopened.close();
 });
 
 test('production cookies are Secure and deleting seed content is not undone by reopening the database', async (t) => {

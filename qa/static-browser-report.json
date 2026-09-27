@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-27T17:17:22.360Z",
+  "timestamp": "2026-09-27T22:29:28.056Z",
   "basePath": "/cct-compute-chain/",
   "results": [
     {
@@ -13,7 +13,7 @@
       "route": "#/business",
       "width": 1440,
       "status": 200,
-      "heading": "九大方向，一张产业智能地图。",
+      "heading": "十五大方向，一张产业智能地图。",
       "passed": true
     },
     {
@@ -69,7 +69,7 @@
       "route": "#/business",
       "width": 390,
       "status": 200,
-      "heading": "九大方向，一张产业智能地图。",
+      "heading": "十五大方向，一张产业智能地图。",
       "passed": true
     },
     {
@@ -115,7 +115,7 @@
       "passed": true
     },
     {
-      "name": "all nine business directions, pilot/review filters and related CTA",
+      "name": "all fifteen business directions, commercial paths, first pilots, filters and related CTA",
       "passed": true
     },
     {

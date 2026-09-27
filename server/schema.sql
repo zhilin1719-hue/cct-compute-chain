@@ -75,4 +75,4 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 );
 CREATE INDEX IF NOT EXISTS idx_audit_created ON audit_logs(created_at);
 
-PRAGMA user_version = 2;
+PRAGMA user_version = 3;

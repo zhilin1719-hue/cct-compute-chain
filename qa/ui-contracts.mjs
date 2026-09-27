@@ -3,15 +3,18 @@ export async function verifyGroupExperience(page, base, { hash = false } = {}) {
   const route = path => base.replace(/\/$/, '') + (hash ? '/#' : '') + path;
   const check = (ok, message) => { if (!ok) throw new Error(message); };
   await page.goto(route('/business'), { waitUntil: 'networkidle' });
-  check(await page.locator('.cct-business-map button').count() === 9, 'The group map must expose all nine business directions');
+  check(await page.locator('.cct-business-map button').count() === 15, 'The group map must expose all fifteen business directions');
   for (const button of await page.locator('.cct-business-map button').all()) {
     await button.click();
     check(await button.getAttribute('aria-pressed') === 'true', 'Business selection must be visible and accessible');
     check((await page.locator('.cct-business-detail h3').innerText()).trim().length > 0, 'Business details must have a heading');
   }
-  await page.getByRole('button', { name: '联合试点方向', exact: true }).click();
-  check(await page.locator('.cct-business-map button').count() === 2, 'Pilot filter must expose robotics and low-altitude directions');
-  await page.getByRole('button', { name: '待专业审核方向', exact: true }).click();
+  await page.getByRole('button', { name: /AI 漫剧与短剧/ }).click();
+  check((await page.locator('.cct-business-model').innerText()).includes('内容分成'), 'New growth directions must explain how customers can commercialize the service');
+  check((await page.locator('.cct-business-start').innerText()).includes('3 集样片'), 'New growth directions must provide a concrete first pilot');
+  await page.getByRole('button', { name: '创新业务', exact: true }).click();
+  check(await page.locator('.cct-business-map button').count() === 4, 'Pilot filter must expose public services, additive manufacturing, robotics and low-altitude directions');
+  await page.getByRole('button', { name: '生态合作', exact: true }).click();
   check(await page.locator('.cct-business-map button').count() === 1, 'Review filter must expose the capital collaboration direction');
   check((await page.locator('.cct-business-boundary').innerText()).includes('不构成金融产品'), 'Capital direction must retain its scope boundary');
   check(await page.locator('.cct-business-cta').getAttribute('href') === (hash ? '#/ecosystem' : '/ecosystem'), 'Capital CTA must link to ecosystem collaboration');
@@ -61,7 +64,7 @@ export async function verifyGroupExperience(page, base, { hash = false } = {}) {
   await page.getByRole('button', { name: '切换为中文' }).click();
   await page.setViewportSize({ width: 1440, height: 1000 });
   return [
-    { name: 'all nine business directions, pilot/review filters and related CTA', passed: true },
+    { name: 'all fifteen business directions, commercial paths, first pilots, filters and related CTA', passed: true },
     { name: 'hero asset and container bounds at 360/390/768/1024/1440px', passed: true },
     { name: 'mobile navigation focus, shortcut search recovery, Escape and desktop scroll recovery', passed: true },
     { name: 'English business atlas at mobile and desktop widths', passed: true },

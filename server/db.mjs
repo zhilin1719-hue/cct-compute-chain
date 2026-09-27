@@ -12,6 +12,11 @@ const legacySafeSlugs = new Set([
   'from-ai-demo-to-delivery', 'compute-that-fits-the-workload', 'governance-by-design',
 ]);
 const legacySafeContent = initialContent.filter((item) => legacySafeSlugs.has(item.slug));
+const businessExpansionSlugs = new Set([
+  'ai-public-services', 'ai-series-studio', 'ai-foreign-trade', 'ai-cross-border-commerce', 'additive-manufacturing', 'ai-creator-economy',
+  'market-signal-ai-video-2026', 'market-signal-ai-cross-border-2026', 'market-signal-additive-manufacturing-2026',
+  'market-signal-creator-economy-2025', 'market-signal-ai-public-services-2026',
+]);
 
 const serverDirectory = dirname(fileURLToPath(import.meta.url));
 export const projectDirectory = resolve(serverDirectory, '..');
@@ -35,13 +40,14 @@ export function openDatabase({ dbPath = resolve(projectDirectory, 'data/cct.sqli
   let version = db.prepare('PRAGMA user_version').get().user_version;
   const fresh = version === 0;
   const upgraded = version > 0 && version < 2;
-  if (version > 2) {
+  const expanded = version > 0 && version < 3;
+  if (version > 3) {
     db.close();
     throw new Error('Database schema is newer than this application. Refusing to downgrade.');
   }
   if (version < 1) {
     transaction(db, () => db.exec(readFileSync(resolve(serverDirectory, 'schema.sql'), 'utf8')));
-    version = 2;
+    version = 3;
   }
   if (version < 2) {
     transaction(db, () => {
@@ -61,6 +67,10 @@ export function openDatabase({ dbPath = resolve(projectDirectory, 'data/cct.sqli
       db.exec("UPDATE content SET status = 'draft' WHERE evidence_level = 'unverified'");
     });
     version = 2;
+  }
+  if (version < 3) {
+    transaction(db, () => db.exec('PRAGMA user_version = 3;'));
+    version = 3;
   }
 
   transaction(db, () => {
@@ -95,6 +105,13 @@ export function openDatabase({ dbPath = resolve(projectDirectory, 'data/cct.sqli
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'published', ?, ?, ?)`);
       for (const item of initialContent.filter((entry) => !legacySafeSlugs.has(entry.slug))) {
         insertNew.run(randomUUID(), item.type, item.slug, item.title, item.titleEn, item.summary, item.summaryEn, item.body, item.bodyEn, item.category, item.claimScope || 'cct', item.evidenceLevel || 'internal', item.sourceLabel || '', item.sourceUrl || '', item.sourceDate || '', Number(item.featured), now, now);
+      }
+    } else if (seed && expanded) {
+      const insertExpansion = db.prepare(`INSERT OR IGNORE INTO content
+        (id, type, slug, title, title_en, summary, summary_en, body, body_en, category, claim_scope, evidence_level, source_label, source_url, source_date, status, featured, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'published', ?, ?, ?)`);
+      for (const item of initialContent.filter((entry) => businessExpansionSlugs.has(entry.slug))) {
+        insertExpansion.run(randomUUID(), item.type, item.slug, item.title, item.titleEn, item.summary, item.summaryEn, item.body, item.bodyEn, item.category, item.claimScope || 'cct', item.evidenceLevel || 'internal', item.sourceLabel || '', item.sourceUrl || '', item.sourceDate || '', Number(item.featured), now, now);
       }
     }
     if (bootstrapPassword && !db.prepare('SELECT 1 FROM users LIMIT 1').get()) {

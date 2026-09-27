@@ -52,10 +52,16 @@
 .cct-business-capabilities li { display:flex; align-items:center; gap:10px; font-size:12px; line-height:1.7; color:#d7e3f8; }
 .cct-business-capabilities li svg { flex:none; color:#72caff; }
 .cct-business-use { border-top:1px solid #233550; padding-top:19px; margin-bottom:18px; }
-.cct-business-use>span,.cct-business-related>span { display:block; font-size:10px; color:#96acd0; letter-spacing:.4px; margin-bottom:8px; }
+.cct-business-use>span,.cct-business-model>span,.cct-business-start>span,.cct-business-related>span { display:block; font-size:10px; color:#96acd0; letter-spacing:.4px; margin-bottom:8px; }
 .cct-business-use p { color:#c0cfe7; font-size:12px; line-height:1.8; margin:0; }
+.cct-business-model,.cct-business-start { padding:15px 16px; margin:0 0 12px; border-radius:8px; }
+.cct-business-model { background:#0f2542; border:1px solid #28527e; }
+.cct-business-start { background:#102238; border:1px solid #244563; }
+.cct-business-model p,.cct-business-start p { color:#d5e4f8; font-size:13px; line-height:1.75; margin:0; }
 .cct-business-boundary { display:flex; gap:10px; background:#101d32; border:1px solid #263b5a; border-radius:7px; padding:13px; margin:0 0 24px; }
 .cct-business-boundary svg { flex:none; color:#91b6e5; margin-top:1px; }
+.cct-business-boundary div { min-width:0; }
+.cct-business-boundary span { display:block; color:#d8e6fb; font-size:11px; font-weight:700; margin-bottom:4px; }
 .cct-business-boundary p { color:#a8bad5; font-size:11px; line-height:1.9; margin:0; }
 .cct-business-related { display:grid; margin-bottom:25px; }
 .cct-business-related a { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:39px; font-size:12px; line-height:1.8; color:#d2e3fb; border-bottom:1px solid #253752; padding:9px 0; transition:color .18s; }
@@ -132,8 +138,9 @@
 .cct-business-stage{font-size:12px;padding:6px 9px}
 .cct-business-description{font-size:15px;line-height:1.8}
 .cct-business-capabilities li{font-size:14px}
-.cct-business-use>span,.cct-business-related>span{font-size:13px;font-weight:600}
+.cct-business-use>span,.cct-business-model>span,.cct-business-start>span,.cct-business-related>span{font-size:13px;font-weight:600}
 .cct-business-use p{font-size:14px}
+.cct-business-model p,.cct-business-start p{font-size:14px}
 .cct-business-boundary p{font-size:13px;line-height:1.75}
 .cct-business-related a{font-size:14px}
 .cct-business-cta{font-size:14px}
@@ -148,5 +155,6 @@
   .cct-business-stage{font-size:12px}
   .cct-business-description{font-size:14px}
   .cct-business-capabilities li,.cct-business-use p,.cct-business-related a,.cct-business-cta{font-size:14px}
+  .cct-business-model p,.cct-business-start p{font-size:14px}
   .cct-business-boundary p{font-size:13px}
 }

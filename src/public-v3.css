@@ -130,7 +130,6 @@
 .site-architecture-section{padding-block:88px;background:#080f1e;color:#edf4ff}
 .site-architecture-section .site-section-label{color:#b1c2de}
 .site-architecture-section p{color:#b1c2de}
-.site-disclosure{display:block;font-size:11px;color:#b1c2de;line-height:1.7}
 .site-architecture-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid #1c2d49;border-left:1px solid #1c2d49;border-radius:12px;overflow:hidden}
 .site-architecture-layer{padding:25px;display:grid;grid-template-columns:1fr auto;gap:12px;border-right:1px solid #1c2d49;border-bottom:1px solid #1c2d49;transition:background .2s}
 .site-architecture-layer:hover{background:#080f1e}
@@ -220,7 +219,6 @@
 .site-about-motif{display:grid;place-content:center;min-height:390px;background:#080f1e;border-radius:18px;color:#edf4ff}
 .site-about-motif>div{display:none}
 .site-about-motif>span{font:600 110px/1 "Segoe UI",sans-serif;letter-spacing:-.08em}
-.site-about-motif>small{font:9px Consolas,monospace;letter-spacing:.1em;margin-top:18px}
 .site-values-grid>div{padding:26px 20px;border-top:1px solid #22324d}
 .site-values-grid svg{color:#9cafcc;margin-bottom:30px}
 .site-values-grid h3{font-size:22px}
@@ -260,8 +258,6 @@
 .site-article{display:grid;grid-template-columns:220px minmax(0,780px);gap:70px;padding-bottom:100px;align-items:start}
 .site-article>aside{position:sticky;top:30px;display:flex;flex-direction:column;align-items:flex-start;gap:20px;font-size:12px;color:#9cafcc}
 .site-article>aside>a{display:flex;align-items:center;gap:10px;color:#9cafcc;font-weight:600}
-.site-article-aside-mark{font-size:48px;letter-spacing:-.07em;color:#b1c2de;border-top:1px solid #22324d;padding-top:28px;width:100%;margin-top:20px}
-.site-article-aside-mark small{display:block;font:8px Consolas,monospace;letter-spacing:.13em}
 .site-article-body{background:#0d1729;border:1px solid var(--line);padding:40px;border-radius:14px;min-width:0}
 .site-article-body>p{font-size:16px;line-height:2;white-space:pre-line;overflow-wrap:anywhere;margin:0 0 24px;color:#9cafcc}
 .site-article-body .site-evidence-notice{margin:0 0 28px}
@@ -417,14 +413,13 @@
 .site-values-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
 .site-contact-layout{grid-template-columns:1fr;gap:36px}
 .site-contact-aside{display:grid;grid-template-columns:1fr 1fr;column-gap:30px}
-.site-contact-aside>.site-eyebrow,.site-contact-aside h2{grid-column:1}
+.site-contact-aside h2{grid-column:1}
 .site-contact-aside>p{grid-column:1}
 .site-contact-points{grid-column:2;grid-row:1/4;margin:20px 0}
 .site-contact-note{grid-column:1/-1;margin-top:0}
 .site-footer-links{gap:50px}
 .site-article{grid-template-columns:1fr;gap:28px}
 .site-article>aside{position:static;flex-direction:row;flex-wrap:wrap;align-items:center}
-.site-article-aside-mark{display:none}
 .site-signal-card h3{font-size:22px}
 .site-insight-meta{font-size:9px}
 }
@@ -683,7 +678,7 @@
 .site-insight-meta { color:#91aace; }
 .site-architecture-section { background:linear-gradient(135deg,#0e2140,#08111f 70%); border-block:1px solid #243956; padding-block:94px; }
 .site-architecture-section .site-section-label { color:#8db8ef; }
-.site-architecture-section p,.site-disclosure { color:#a6b5cf; }
+.site-architecture-section p { color:#a6b5cf; }
 .site-architecture-grid { border-color:#2b4262; border-radius:8px; }
 .site-architecture-layer { border-color:#2b4262; background:#0b182d80; padding:30px 25px; gap:20px; }
 .site-architecture-layer:hover { background:#152e51; }
@@ -736,7 +731,6 @@
 .site-reset { color:#9dccff; border-color:#395981; background:#122440; }
 .site-article-body { background:#0c1628; border-color:#263a59; }
 .site-article-body>p { color:#bccae0; }
-.site-article-aside-mark { color:#83b6f8; }
 .site-source-link,.site-source-policy,.site-evidence-notice { background:#102039; border-color:#2c486d; color:#d8e9ff; }
 .site-source-link strong { color:#c1ddff; }
 .site-source-policy svg,.site-evidence-notice svg { color:#8acaff; }
@@ -908,7 +902,6 @@
 .site-journey-links a{font-size:13px;padding:9px 12px}
 .site-card-body p,.site-delivery-grid p,.site-opportunity-intro p{font-size:14px}
 .site-card-bottom,.site-signal-source,.site-signal-actions a{font-size:13px}
-.site-disclosure{font-size:13px}
 .site-source-policy p,.site-evidence-notice p{font-size:14px}
 .site-eco-values{font-size:13px}
 .site-breadcrumb{font-size:13px}

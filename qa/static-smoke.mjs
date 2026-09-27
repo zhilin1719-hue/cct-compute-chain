@@ -49,7 +49,7 @@ try {
   if (!await page.locator('.site-think-card').count()) throw new Error('Static think tank did not show local evidence results');
   report.results.push({ name: 'static AI think tank local evidence retrieval', passed: true });
   await page.goto(base + '#/opportunities', { waitUntil: 'networkidle' });
-  if (!await page.getByText('外部市场数据', { exact: true }).first().isVisible()) throw new Error('Market evidence label is not visible on the static site.');
+  if (!await page.getByText('市场数据', { exact: true }).first().isVisible()) throw new Error('Market evidence label is not visible on the static site.');
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(base + '#/', { waitUntil: 'networkidle' });
   await page.evaluate(() => document.getElementById('capabilities')?.scrollIntoView());
