@@ -7,3 +7,4 @@ LOCAL-ACCESS.md
 qa/screenshots/
 *.log
 dist-pages/
+.vercel
