@@ -466,4 +466,4 @@ html.cct-admin-root,body.cct-admin-body{max-width:100vw;overflow-x:hidden}
 @media(max-width:540px) { .adm-stat-card { padding:16px 13px; } .adm-stat-card:after { left:13px; right:13px; } .adm-stat-card>strong { font-size:31px; } .adm-panel-heading { padding:20px 17px; } .adm-page-heading h1 { font-size:26px; } .adm-drawer { border-radius:0; } }
 
 /* Readability refinement for the cool-white login workspace. */
-.adm-login-description,.adm-login-help,.adm-login-help svg{color:#526d91}.adm-login-field input::placeholder{color:#607c9f}.adm-login-submit,.adm-btn-primary{background:#2563eb;border-color:#2563eb;color:#fff}.adm-login-submit:hover,.adm-btn-primary:hover{background:#1d4ed8;border-color:#1d4ed8}
+.adm-login-description,.adm-login-help,.adm-login-help svg{color:#526d91}.adm-login .adm-field input::placeholder{color:#607c9f}.adm-login-submit,.adm-btn-primary{background:#2563eb;border-color:#2563eb;color:#fff}.adm-login-submit:hover,.adm-btn-primary:hover{background:#1d4ed8;border-color:#1d4ed8}
