@@ -1,12 +1,19 @@
 {
-  "timestamp": "2026-09-25T15:13:31.190Z",
+  "timestamp": "2026-09-27T09:46:03.165Z",
   "basePath": "/cct-compute-chain/",
   "results": [
     {
       "route": "#/",
       "width": 1440,
       "status": 200,
-      "heading": "连接算力、数据与智能体，\n持续产生业务结果。",
+      "heading": "让智能，\n成为生产力。",
+      "passed": true
+    },
+    {
+      "route": "#/business",
+      "width": 1440,
+      "status": 200,
+      "heading": "九大方向，一张产业智能地图。",
       "passed": true
     },
     {
@@ -41,7 +48,14 @@
       "route": "#/",
       "width": 390,
       "status": 200,
-      "heading": "连接算力、数据与智能体，\n持续产生业务结果。",
+      "heading": "让智能，\n成为生产力。",
+      "passed": true
+    },
+    {
+      "route": "#/business",
+      "width": 390,
+      "status": 200,
+      "heading": "九大方向，一张产业智能地图。",
       "passed": true
     },
     {
@@ -70,6 +84,22 @@
       "width": 390,
       "status": 200,
       "heading": "好的改变，\n从一次对话开始。",
+      "passed": true
+    },
+    {
+      "name": "all nine business directions, pilot/review filters and related CTA",
+      "passed": true
+    },
+    {
+      "name": "hero asset and container bounds at 360/390/768/1024/1440px",
+      "passed": true
+    },
+    {
+      "name": "mobile navigation focus, shortcut search recovery, Escape and desktop scroll recovery",
+      "passed": true
+    },
+    {
+      "name": "English business atlas at mobile and desktop widths",
       "passed": true
     },
     {

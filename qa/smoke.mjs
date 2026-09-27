@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { randomBytes } from 'node:crypto';
 import { createApp } from '../server/index.mjs';
+import { verifyGroupExperience } from './ui-contracts.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const temporary = mkdtempSync(resolve(tmpdir(), 'cct-browser-qa-'));
@@ -21,7 +22,7 @@ const browser = await chromium.launch({ headless: true, channel: process.env.PLA
 try {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' });
   page.on('pageerror', error => errors.push(error.message));
-  const routes = ['/', '/services', '/solutions', '/opportunities', '/ecosystem', '/insights', '/about', '/contact', '/privacy', '/terms', '/content/agent-systems', '/content/market-signal-ai-infrastructure-2026', '/not-a-page'];
+  const routes = ['/', '/business', '/services', '/solutions', '/opportunities', '/ecosystem', '/insights', '/about', '/contact', '/privacy', '/terms', '/content/agent-systems', '/content/market-signal-ai-infrastructure-2026', '/not-a-page'];
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
     for (const path of routes) {
@@ -35,12 +36,49 @@ try {
     }
   }
   await page.setViewportSize({ width: 1440, height: 1000 });
+  results.push(...await verifyGroupExperience(page, base));
+  await page.route('**/api/public/bootstrap', async route => {
+    const response = await route.fetch();
+    const data = await response.json();
+    await route.fulfill({ response, json: { ...data, content: [] } });
+  });
+  for (const path of ['/business', '/']) {
+    await page.goto(base + path, { waitUntil: 'networkidle' });
+    await page.locator('.cct-business-map').waitFor();
+    if (await page.locator('.cct-business-related a').count()) throw new Error('Unpublished business content still has public links');
+    if (!await page.locator('.cct-business-cta').isVisible()) throw new Error('Business enquiry CTA is unavailable when related content is unpublished');
+  }
+  await page.unroute('**/api/public/bootstrap');
+  results.push({ name: 'business atlas hides unavailable content links on homepage and business page', passed: true });
   await page.goto(base, { waitUntil: 'networkidle' });
   await page.getByRole('button', { name: 'Switch to English' }).click();
-  await page.getByRole('heading', { level: 1 }).filter({ hasText: 'Compute, data and agents' }).waitFor();
+  await page.getByRole('heading', { level: 1 }).filter({ hasText: 'Intelligence.' }).waitFor();
   await page.screenshot({ path: resolve(screenshots, 'home-en-1440.png'), fullPage: true });
   results.push({ name: 'public English language toggle', passed: true });
   await page.getByRole('button', { name: '切换为中文' }).click();
+  await page.getByRole('tab', { name: '构建 AI 基础设施' }).click();
+  await page.getByRole('tabpanel').filter({ hasText: '让每一次推理，更有价值。' }).waitFor();
+  await page.getByRole('tab', { name: '构建 AI 基础设施' }).press('ArrowRight');
+  if (await page.getByRole('tab', { name: '寻找业务增长' }).getAttribute('aria-selected') !== 'true') throw new Error('Journey keyboard navigation failed');
+  results.push({ name: 'guided discovery click and keyboard navigation', passed: true });
+  const searchButton = page.getByRole('button', { name: '搜索网站', exact: true });
+  await searchButton.click();
+  await page.getByRole('searchbox', { name: '搜索产品、方案与洞察', exact: true }).fill('不存在的结果zzzzz');
+  await page.getByRole('button', { name: '清空搜索' }).click();
+  await page.getByRole('searchbox', { name: '搜索产品、方案与洞察', exact: true }).fill('FinOps');
+  await page.getByRole('dialog').getByRole('link', { name: /推理基础设施与 FinOps/ }).click();
+  await page.waitForURL('**/content/inference-fabric');
+  if (await page.getByRole('dialog').count()) throw new Error('Search dialog remained open after navigation');
+  await searchButton.click();
+  await page.getByRole('searchbox', { name: '搜索产品、方案与洞察', exact: true }).press('Escape');
+  if (!await searchButton.evaluate(el => el === document.activeElement)) throw new Error('Search focus was not restored');
+  results.push({ name: 'global search empty state, result navigation and Escape focus restore', passed: true });
+  await page.goto(base + '/services', { waitUntil: 'networkidle' });
+  await page.getByRole('searchbox', { name: '搜索内容', exact: true }).fill('不存在的结果zzzzz');
+  if (await page.locator('.site-service-card').count()) throw new Error('Collection search did not filter');
+  await page.getByRole('button', { name: '重置筛选' }).click();
+  if (!await page.locator('.site-service-card').count()) throw new Error('Reset did not restore content');
+  results.push({ name: 'collection search and reset recovery', passed: true });
   await page.goto(base + '/contact', { waitUntil: 'networkidle' });
   // Form actions are driven by visible labels. Field names are a stable cross-language contract.
   const inputByName = async (name, text) => {

@@ -1,12 +1,18 @@
 {
-  "timestamp": "2026-09-25T10:27:32.723Z",
+  "timestamp": "2026-09-27T09:45:57.671Z",
   "isolatedDatabase": true,
   "results": [
     {
       "name": "public / @ 1440",
       "passed": true,
       "status": 200,
-      "heading": "连接算力、数据与智能体，\n持续产生业务结果。"
+      "heading": "让智能，\n成为生产力。"
+    },
+    {
+      "name": "public /business @ 1440",
+      "passed": true,
+      "status": 200,
+      "heading": "九大方向，一张产业智能地图。"
     },
     {
       "name": "public /services @ 1440",
@@ -84,7 +90,13 @@
       "name": "public / @ 390",
       "passed": true,
       "status": 200,
-      "heading": "连接算力、数据与智能体，\n持续产生业务结果。"
+      "heading": "让智能，\n成为生产力。"
+    },
+    {
+      "name": "public /business @ 390",
+      "passed": true,
+      "status": 200,
+      "heading": "九大方向，一张产业智能地图。"
     },
     {
       "name": "public /services @ 390",
@@ -159,7 +171,39 @@
       "heading": "这个坐标，\n暂时没有内容。"
     },
     {
+      "name": "all nine business directions, pilot/review filters and related CTA",
+      "passed": true
+    },
+    {
+      "name": "hero asset and container bounds at 360/390/768/1024/1440px",
+      "passed": true
+    },
+    {
+      "name": "mobile navigation focus, shortcut search recovery, Escape and desktop scroll recovery",
+      "passed": true
+    },
+    {
+      "name": "English business atlas at mobile and desktop widths",
+      "passed": true
+    },
+    {
+      "name": "business atlas hides unavailable content links on homepage and business page",
+      "passed": true
+    },
+    {
       "name": "public English language toggle",
+      "passed": true
+    },
+    {
+      "name": "guided discovery click and keyboard navigation",
+      "passed": true
+    },
+    {
+      "name": "global search empty state, result navigation and Escape focus restore",
+      "passed": true
+    },
+    {
+      "name": "collection search and reset recovery",
       "passed": true
     },
     {

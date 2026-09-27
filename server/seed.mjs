@@ -1,7 +1,7 @@
 export const initialSettings = {
   brandName: 'CCT 算链集团',
-  heroTitle: '连接算力、数据与智能体，\n持续产生业务结果。',
-  heroTitleEn: 'Compute, data and agents.\nEngineered for outcomes.',
+  heroTitle: '让智能，\n成为生产力。',
+  heroTitleEn: 'Intelligence.\nInto impact.',
   heroSubtitle: 'CCT AI 产业计算网络，从推理基础设施、企业智能体到行业系统与可信治理，构建可评测、可审计、可计量的生产级路径。',
   heroSubtitleEn: 'CCT AI Industrial Network connects inference infrastructure, enterprise agents, industry systems and trusted governance into a measurable path to production.',
   contactEmail: 'contact@cct.example',

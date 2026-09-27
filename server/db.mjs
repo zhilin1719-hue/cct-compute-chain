@@ -75,6 +75,11 @@ export function openDatabase({ dbPath = resolve(projectDirectory, 'data/cct.sqli
     };
     const upgradeSetting = db.prepare('UPDATE settings SET value = ?, updated_at = ? WHERE key = ? AND value = ?');
     for (const [key, oldValue] of Object.entries(legacyDefaults)) upgradeSetting.run(initialSettings[key], now, key, oldValue);
+    // Upgrade only exact, untouched v2 brand defaults. Custom titles are preserved per language.
+    for (const [key, oldValue] of Object.entries({
+      heroTitle: '连接算力、数据与智能体，\n持续产生业务结果。',
+      heroTitleEn: 'Compute, data and agents.\nEngineered for outcomes.',
+    })) upgradeSetting.run(initialSettings[key], now, key, oldValue);
 
     // Seed only a freshly migrated database. Deleting all content must not resurrect it on restart.
     if (seed && fresh) {

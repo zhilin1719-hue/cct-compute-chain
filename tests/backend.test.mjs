@@ -326,6 +326,25 @@ test('settings changes persist publicly and rejected values cannot overwrite app
   assert.ok(events.some((event) => event.action === 'settings.updated' && event.details.fields.includes('heroTitle')));
 });
 
+test('brand refresh upgrades untouched titles and preserves independently customized languages', async (t) => {
+  const f = await fixture(t);
+  const set = f.app.locals.db.prepare('UPDATE settings SET value = ? WHERE key = ?');
+  set.run('连接算力、数据与智能体，\n持续产生业务结果。', 'heroTitle');
+  set.run('Our custom English headline', 'heroTitleEn');
+  const reopened = openDatabase({ dbPath: f.dbPath });
+  try {
+    assert.equal(reopened.prepare("SELECT value FROM settings WHERE key = 'heroTitle'").get().value, '让智能，\n成为生产力。');
+    assert.equal(reopened.prepare("SELECT value FROM settings WHERE key = 'heroTitleEn'").get().value, 'Our custom English headline');
+    set.run('客户自行设定的中文标题', 'heroTitle');
+    set.run('Compute, data and agents.\nEngineered for outcomes.', 'heroTitleEn');
+    const again = openDatabase({ dbPath: f.dbPath });
+    try {
+      assert.equal(again.prepare("SELECT value FROM settings WHERE key = 'heroTitle'").get().value, '客户自行设定的中文标题');
+      assert.equal(again.prepare("SELECT value FROM settings WHERE key = 'heroTitleEn'").get().value, 'Intelligence.\nInto impact.');
+    } finally { again.close(); }
+  } finally { reopened.close(); }
+});
+
 test('v1 migration quarantines edited legacy content and only adds new v2 seed records', (t) => {
   const dbPath = join(tmpdir(), `cct-migration-${process.pid}-${Date.now()}.sqlite`);
   t.after(async () => {

@@ -3,6 +3,7 @@ import express from 'express';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { once } from 'node:events';
+import { verifyGroupExperience } from './ui-contracts.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const distribution = resolve(root, 'dist-pages');
@@ -24,7 +25,7 @@ try {
   page.on('pageerror', error => report.errors.push(error.message));
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
-    for (const route of ['#/', '#/services', '#/opportunities', '#/content/market-signal-ai-infrastructure-2026', '#/contact']) {
+    for (const route of ['#/', '#/business', '#/services', '#/opportunities', '#/content/market-signal-ai-infrastructure-2026', '#/contact']) {
       const response = await page.goto(base + route, { waitUntil: 'networkidle' });
       await page.locator('.site h1').first().waitFor();
       const state = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, heading: document.querySelector('h1')?.innerText || '', forms: document.querySelectorAll('.site-contact-form').length }));
@@ -34,6 +35,7 @@ try {
       report.results.push({ route, width, status: response?.status() ?? 200, heading: state.heading, passed: true });
     }
   }
+  report.results.push(...await verifyGroupExperience(page, base, { hash: true }));
   await page.goto(base + '#/opportunities', { waitUntil: 'networkidle' });
   if (!await page.getByText('外部市场数据', { exact: true }).first().isVisible()) throw new Error('Market evidence label is not visible on the static site.');
   await page.setViewportSize({ width: 1440, height: 1000 });
