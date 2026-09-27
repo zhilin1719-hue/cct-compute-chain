@@ -11,6 +11,7 @@
     "dev:server": "node --watch server/index.mjs",
     "build": "vite build",
     "build:pages": "vite build --mode pages --base=/cct-compute-chain/ --outDir dist-pages",
+    "build:vercel": "vite build --mode serverless",
     "start": "node server/index.mjs",
     "test": "node --test tests/backend.test.mjs",
     "test:browser": "node qa/smoke.mjs",

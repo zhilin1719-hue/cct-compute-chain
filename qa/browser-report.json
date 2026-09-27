@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-27T09:45:57.671Z",
+  "timestamp": "2026-09-27T17:16:26.079Z",
   "isolatedDatabase": true,
   "results": [
     {
@@ -13,6 +13,18 @@
       "passed": true,
       "status": 200,
       "heading": "九大方向，一张产业智能地图。"
+    },
+    {
+      "name": "public /agents @ 1440",
+      "passed": true,
+      "status": 200,
+      "heading": "AI 智能体，\n帮你把任务想清楚、做成事。"
+    },
+    {
+      "name": "public /think-tank @ 1440",
+      "passed": true,
+      "status": 200,
+      "heading": "AI 智库，\n让每个判断都有依据。"
     },
     {
       "name": "public /services @ 1440",
@@ -97,6 +109,18 @@
       "passed": true,
       "status": 200,
       "heading": "九大方向，一张产业智能地图。"
+    },
+    {
+      "name": "public /agents @ 390",
+      "passed": true,
+      "status": 200,
+      "heading": "AI 智能体，\n帮你把任务想清楚、做成事。"
+    },
+    {
+      "name": "public /think-tank @ 390",
+      "passed": true,
+      "status": 200,
+      "heading": "AI 智库，\n让每个判断都有依据。"
     },
     {
       "name": "public /services @ 390",
@@ -204,6 +228,14 @@
     },
     {
       "name": "collection search and reset recovery",
+      "passed": true
+    },
+    {
+      "name": "AI agent scenario selection and controlled execution brief",
+      "passed": true
+    },
+    {
+      "name": "AI think tank question, evidence retrieval and source retention",
       "passed": true
     },
     {

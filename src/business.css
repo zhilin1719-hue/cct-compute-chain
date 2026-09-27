@@ -122,3 +122,31 @@
 @media(prefers-reduced-motion:reduce) { .cct-business * { transition:none!important; transform:none!important; scroll-behavior:auto!important; } }
 
 .cct-business-cta{background:#2869e8;color:#fff}.cct-business-cta:hover{background:#2160d5}
+
+/* Customer readability: business language stays visible at desktop and phone sizes. */
+.cct-business-heading>p{font-size:16px;line-height:1.85}
+.cct-business-stage-note p{font-size:13px;line-height:1.75}
+.cct-business-filters button{font-size:13px;min-height:44px;padding:10px 15px}
+.cct-business-node strong{font-size:15px}
+.cct-business-node-bottom small{font:12px/1.5 Inter,"Microsoft YaHei",sans-serif;letter-spacing:0}
+.cct-business-stage{font-size:12px;padding:6px 9px}
+.cct-business-description{font-size:15px;line-height:1.8}
+.cct-business-capabilities li{font-size:14px}
+.cct-business-use>span,.cct-business-related>span{font-size:13px;font-weight:600}
+.cct-business-use p{font-size:14px}
+.cct-business-boundary p{font-size:13px;line-height:1.75}
+.cct-business-related a{font-size:14px}
+.cct-business-cta{font-size:14px}
+.cct-business-more a{font-size:14px}
+
+@media(max-width:600px){
+  .cct-business-heading>p{font-size:14px}
+  .cct-business-stage-note p{font-size:13px}
+  .cct-business-filters button{font-size:13px;padding:10px 12px}
+  .cct-business-node strong{font-size:13px;line-height:1.5}
+  .cct-business-node-bottom small{font-size:11px}
+  .cct-business-stage{font-size:12px}
+  .cct-business-description{font-size:14px}
+  .cct-business-capabilities li,.cct-business-use p,.cct-business-related a,.cct-business-cta{font-size:14px}
+  .cct-business-boundary p{font-size:13px}
+}

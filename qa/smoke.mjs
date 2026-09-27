@@ -22,7 +22,7 @@ const browser = await chromium.launch({ headless: true, channel: process.env.PLA
 try {
   const page = await browser.newPage({ viewport: { width: 1440, height: 1000 }, reducedMotion: 'reduce' });
   page.on('pageerror', error => errors.push(error.message));
-  const routes = ['/', '/business', '/services', '/solutions', '/opportunities', '/ecosystem', '/insights', '/about', '/contact', '/privacy', '/terms', '/content/agent-systems', '/content/market-signal-ai-infrastructure-2026', '/not-a-page'];
+  const routes = ['/', '/business', '/agents', '/think-tank', '/services', '/solutions', '/opportunities', '/ecosystem', '/insights', '/about', '/contact', '/privacy', '/terms', '/content/agent-systems', '/content/market-signal-ai-infrastructure-2026', '/not-a-page'];
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
     for (const path of routes) {
@@ -32,15 +32,20 @@ try {
       if (metrics.scroll > width + 1) throw new Error(`Horizontal overflow at ${path}, width ${width}: ${metrics.scroll}`);
       if (!metrics.title?.trim()) throw new Error(`No meaningful heading at ${path}`);
       results.push({ name: `public ${path} @ ${width}`, passed: true, status: response.status(), heading: metrics.title });
-      if (path === '/' || path === '/contact') await page.screenshot({ path: resolve(screenshots, `${path === '/' ? 'home' : 'contact'}-${width}.png`), fullPage: true });
+      if (['/','/agents','/think-tank','/contact'].includes(path)) {
+        const name = path === '/' ? 'home' : path.slice(1);
+        await page.screenshot({ path: resolve(screenshots, `${name}-${width}.png`), fullPage: true });
+      }
     }
   }
   await page.setViewportSize({ width: 1440, height: 1000 });
   results.push(...await verifyGroupExperience(page, base));
-  await page.route('**/api/public/bootstrap', async route => {
+  let emptyBootstrapRequests = 0;
+  await page.route('**/api/public/bootstrap*', async route => {
+    emptyBootstrapRequests += 1;
     const response = await route.fetch();
     const data = await response.json();
-    await route.fulfill({ response, json: { ...data, content: [] } });
+    await route.fulfill({ status: 200, contentType: 'application/json', headers: { 'Cache-Control': 'no-store' }, body: JSON.stringify({ ...data, content: [] }) });
   });
   for (const path of ['/business', '/']) {
     await page.goto(base + path, { waitUntil: 'networkidle' });
@@ -48,7 +53,8 @@ try {
     if (await page.locator('.cct-business-related a').count()) throw new Error('Unpublished business content still has public links');
     if (!await page.locator('.cct-business-cta').isVisible()) throw new Error('Business enquiry CTA is unavailable when related content is unpublished');
   }
-  await page.unroute('**/api/public/bootstrap');
+  if (!emptyBootstrapRequests) throw new Error('Unpublished-content bootstrap route was not exercised');
+  await page.unroute('**/api/public/bootstrap*');
   results.push({ name: 'business atlas hides unavailable content links on homepage and business page', passed: true });
   await page.goto(base, { waitUntil: 'networkidle' });
   await page.getByRole('button', { name: 'Switch to English' }).click();
@@ -79,6 +85,25 @@ try {
   await page.getByRole('button', { name: '重置筛选' }).click();
   if (!await page.locator('.site-service-card').count()) throw new Error('Reset did not restore content');
   results.push({ name: 'collection search and reset recovery', passed: true });
+  await page.goto(base + '/agents', { waitUntil: 'networkidle' });
+  await page.screenshot({ path: resolve(screenshots, 'agents-1440.png'), fullPage: true });
+  await page.getByRole('button', { name: /增长智能体/ }).click();
+  await page.locator('.site-agent-console textarea').first().fill('为算链集团制定可复核的 GEO 内容验证计划');
+  const agentResponse = page.waitForResponse(response => response.url().endsWith('/api/public/ai/agent') && response.request().method() === 'POST');
+  await page.getByRole('button', { name: '生成执行建议', exact: true }).click();
+  if ((await agentResponse).status() !== 200) throw new Error('AI agent endpoint did not return a brief');
+  await page.locator('.site-agent-result').waitFor();
+  if (!await page.getByText('生成方式：本地工作流模板', { exact: true }).isVisible()) throw new Error('AI fallback mode is not disclosed');
+  results.push({ name: 'AI agent scenario selection and controlled execution brief', passed: true });
+  await page.goto(base + '/think-tank', { waitUntil: 'networkidle' });
+  await page.screenshot({ path: resolve(screenshots, 'think-tank-1440.png'), fullPage: true });
+  await page.getByLabel('输入智库问题').fill('企业智能体需要哪些治理条件？');
+  const thinkResponse = page.waitForResponse(response => response.url().endsWith('/api/public/ai/ask') && response.request().method() === 'POST');
+  await page.getByRole('button', { name: '提交智库问题' }).click();
+  if ((await thinkResponse).status() !== 200) throw new Error('AI think tank endpoint did not return grounded results');
+  await page.getByRole('heading', { name: '智库回答', exact: true }).waitFor();
+  if (!await page.locator('.site-think-card').count()) throw new Error('Think tank did not retain published source records');
+  results.push({ name: 'AI think tank question, evidence retrieval and source retention', passed: true });
   await page.goto(base + '/contact', { waitUntil: 'networkidle' });
   // Form actions are driven by visible labels. Field names are a stable cross-language contract.
   const inputByName = async (name, text) => {

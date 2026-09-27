@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-27T09:46:03.165Z",
+  "timestamp": "2026-09-27T17:17:22.360Z",
   "basePath": "/cct-compute-chain/",
   "results": [
     {
@@ -14,6 +14,20 @@
       "width": 1440,
       "status": 200,
       "heading": "九大方向，一张产业智能地图。",
+      "passed": true
+    },
+    {
+      "route": "#/agents",
+      "width": 1440,
+      "status": 200,
+      "heading": "AI 智能体，\n帮你把任务想清楚、做成事。",
+      "passed": true
+    },
+    {
+      "route": "#/think-tank",
+      "width": 1440,
+      "status": 200,
+      "heading": "AI 智库，\n让每个判断都有依据。",
       "passed": true
     },
     {
@@ -56,6 +70,20 @@
       "width": 390,
       "status": 200,
       "heading": "九大方向，一张产业智能地图。",
+      "passed": true
+    },
+    {
+      "route": "#/agents",
+      "width": 390,
+      "status": 200,
+      "heading": "AI 智能体，\n帮你把任务想清楚、做成事。",
+      "passed": true
+    },
+    {
+      "route": "#/think-tank",
+      "width": 390,
+      "status": 200,
+      "heading": "AI 智库，\n让每个判断都有依据。",
       "passed": true
     },
     {
@@ -100,6 +128,14 @@
     },
     {
       "name": "English business atlas at mobile and desktop widths",
+      "passed": true
+    },
+    {
+      "name": "static AI agent local workflow brief",
+      "passed": true
+    },
+    {
+      "name": "static AI think tank local evidence retrieval",
       "passed": true
     },
     {

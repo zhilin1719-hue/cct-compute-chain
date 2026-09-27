@@ -9,9 +9,9 @@ export async function verifyGroupExperience(page, base, { hash = false } = {}) {
     check(await button.getAttribute('aria-pressed') === 'true', 'Business selection must be visible and accessible');
     check((await page.locator('.cct-business-detail h3').innerText()).trim().length > 0, 'Business details must have a heading');
   }
-  await page.locator('.cct-business-filters button').filter({ hasText: 'PILOT' }).click();
+  await page.getByRole('button', { name: '联合试点方向', exact: true }).click();
   check(await page.locator('.cct-business-map button').count() === 2, 'Pilot filter must expose robotics and low-altitude directions');
-  await page.locator('.cct-business-filters button').filter({ hasText: 'REVIEW' }).click();
+  await page.getByRole('button', { name: '待专业审核方向', exact: true }).click();
   check(await page.locator('.cct-business-map button').count() === 1, 'Review filter must expose the capital collaboration direction');
   check((await page.locator('.cct-business-boundary').innerText()).includes('不构成金融产品'), 'Capital direction must retain its scope boundary');
   check(await page.locator('.cct-business-cta').getAttribute('href') === (hash ? '#/ecosystem' : '/ecosystem'), 'Capital CTA must link to ecosystem collaboration');

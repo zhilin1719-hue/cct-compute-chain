@@ -4,6 +4,7 @@ const publishedAt = '2026-09-25T00:00:00.000Z';
 
 export const staticBootstrap = {
   settings: initialSettings,
+  ai: { enabled: false, mode: 'guided-workflow', model: null },
   content: initialContent.map((item, index) => ({
     id: `public-${index + 1}`,
     status: 'published',

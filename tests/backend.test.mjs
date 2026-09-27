@@ -85,6 +85,27 @@ test('health and published bootstrap expose useful bilingual content without cre
   assert.match(articleHtml, /AI 基础设施：收入与毛利证据最强的商业主航道 · CCT 算链集团/);
 });
 
+test('AI endpoints validate input, preserve evidence sources and degrade transparently without a model key', async (t) => {
+  const f = await fixture(t, { deepSeekApiKey: '' });
+  const bootstrap = await f.request('/api/public/bootstrap');
+  assert.deepEqual(bootstrap.data.ai, { enabled: false, mode: 'guided-workflow', model: null });
+  const invalid = await f.request('/api/public/ai/agent', { method: 'POST', auth: false, body: { agentId: 'operations', goal: '短', context: '', language: 'zh' } });
+  assert.equal(invalid.status, 400);
+  const agent = await f.request('/api/public/ai/agent', { method: 'POST', auth: false, body: { agentId: 'knowledge', goal: '整理企业智能体治理的执行步骤', context: '仅使用已发布资料', language: 'zh' } });
+  assert.equal(agent.status, 200, JSON.stringify(agent.data));
+  assert.equal(agent.data.brief.mode, 'guided-workflow');
+  assert.equal(agent.data.brief.storesInput, false);
+  assert.equal(agent.data.brief.steps.length, 5);
+  assert.match(agent.data.brief.disclaimer, /不是在线大模型回答/);
+  const thinkTank = await f.request('/api/public/ai/ask', { method: 'POST', auth: false, body: { question: '企业智能体需要哪些治理条件？', scope: 'all', language: 'zh' } });
+  assert.equal(thinkTank.status, 200, JSON.stringify(thinkTank.data));
+  assert.equal(thinkTank.data.result.mode, 'knowledge-search');
+  assert.ok(thinkTank.data.result.sources.length > 0);
+  assert.ok(thinkTank.data.result.sources.every((item) => item.status === 'published'));
+  assert.ok(thinkTank.data.result.sources.some((item) => item.slug === 'agent-systems' || item.slug === 'customer-operations-agents'));
+  assert.equal(f.app.locals.db.prepare('SELECT COUNT(*) AS count FROM leads').get().count, 0, 'AI input must not be stored as a lead');
+});
+
 test('every administration resource rejects unauthenticated requests', async (t) => {
   const f = await fixture(t);
   for (const path of ['stats', 'content', 'leads', 'settings', 'users', 'audit']) {

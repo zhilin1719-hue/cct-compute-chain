@@ -25,7 +25,7 @@ try {
   page.on('pageerror', error => report.errors.push(error.message));
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: width === 390 ? 844 : 1000 });
-    for (const route of ['#/', '#/business', '#/services', '#/opportunities', '#/content/market-signal-ai-infrastructure-2026', '#/contact']) {
+    for (const route of ['#/', '#/business', '#/agents', '#/think-tank', '#/services', '#/opportunities', '#/content/market-signal-ai-infrastructure-2026', '#/contact']) {
       const response = await page.goto(base + route, { waitUntil: 'networkidle' });
       await page.locator('.site h1').first().waitFor();
       const state = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, heading: document.querySelector('h1')?.innerText || '', forms: document.querySelectorAll('.site-contact-form').length }));
@@ -36,11 +36,23 @@ try {
     }
   }
   report.results.push(...await verifyGroupExperience(page, base, { hash: true }));
+  await page.goto(base + '#/agents', { waitUntil: 'networkidle' });
+  await page.locator('.site-agent-console textarea').first().fill('把客户反馈整理为问题、负责人和下一步动作');
+  await page.getByRole('button', { name: '生成执行建议', exact: true }).click();
+  await page.locator('.site-agent-result').waitFor();
+  if (!await page.getByText('生成方式：本地工作流模板', { exact: true }).isVisible()) throw new Error('Static agent fallback is not disclosed');
+  report.results.push({ name: 'static AI agent local workflow brief', passed: true });
+  await page.goto(base + '#/think-tank', { waitUntil: 'networkidle' });
+  await page.getByLabel('输入智库问题').fill('AI 基础设施有哪些商业信号？');
+  await page.getByRole('button', { name: '提交智库问题' }).click();
+  await page.getByRole('heading', { name: '智库回答', exact: true }).waitFor();
+  if (!await page.locator('.site-think-card').count()) throw new Error('Static think tank did not show local evidence results');
+  report.results.push({ name: 'static AI think tank local evidence retrieval', passed: true });
   await page.goto(base + '#/opportunities', { waitUntil: 'networkidle' });
   if (!await page.getByText('外部市场数据', { exact: true }).first().isVisible()) throw new Error('Market evidence label is not visible on the static site.');
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(base + '#/', { waitUntil: 'networkidle' });
-  await page.locator('.site-scroll-link').click();
+  await page.evaluate(() => document.getElementById('capabilities')?.scrollIntoView());
   if (!page.url().endsWith('#/')) throw new Error('Section scrolling must not overwrite the Pages hash route.');
   await page.locator('.site-skip').focus();
   await page.locator('.site-skip').press('Enter');

@@ -6,6 +6,7 @@ import './base.css';
 const PublicSite = lazy(() => import('./PublicSite.jsx'));
 const AdminApp = lazy(() => import('./AdminApp.jsx'));
 const staticSite = import.meta.env.VITE_STATIC_SITE === 'true';
+const serverlessSite = import.meta.env.VITE_SERVERLESS_SITE === 'true';
 const Router = staticSite ? HashRouter : BrowserRouter;
 
 function StaticAdminNotice() {
@@ -24,7 +25,7 @@ class ErrorBoundary extends React.Component {
 createRoot(document.getElementById('root')).render(
   <React.StrictMode><ErrorBoundary><Router>
     <Suspense fallback={<div className="boot-screen" role="status"><span>CCT <small>正在连接智能世界</small></span></div>}>
-      <Routes><Route path="/admin/*" element={staticSite ? <StaticAdminNotice /> : <AdminApp />} /><Route path="/*" element={<PublicSite />} /></Routes>
+      <Routes><Route path="/admin/*" element={staticSite || serverlessSite ? <StaticAdminNotice /> : <AdminApp />} /><Route path="/*" element={<PublicSite />} /></Routes>
     </Suspense>
   </Router></ErrorBoundary></React.StrictMode>
 );

@@ -7,6 +7,7 @@ import { randomUUID } from 'node:crypto';
 import { registerSeo } from './seo.mjs';
 import { openDatabase, projectDirectory, transaction, publicUser, contentRecord, leadRecord, readSettings, audit } from './db.mjs';
 import { COOKIE_NAME, SESSION_DURATION_MS, hashPassword, verifyPassword, newSessionToken, hashToken, csrfForToken, safeEqual, sessionCookie, createRateLimiter } from './security.mjs';
+import { createDeepSeekService, rankKnowledge } from './deepseek.mjs';
 
 const emailSchema = z.string().trim().email('请输入有效的邮箱地址。').max(254).transform((value) => value.toLowerCase());
 const passwordSchema = z.string().min(12, '密码至少需要 12 个字符。').max(128, '密码不能超过 128 个字符。');
@@ -49,6 +50,17 @@ const leadSchema = z.object({
   consent: z.literal(true, { error: '提交前需要同意隐私说明。' }),
   website: z.string().max(300).optional().default(''),
 });
+const agentRequestSchema = z.object({
+  agentId: z.enum(['operations', 'growth', 'knowledge', 'compute']),
+  goal: z.string().trim().min(5, '请至少用 5 个字符描述任务目标。').max(300),
+  context: z.string().trim().max(1000).default(''),
+  language: z.enum(['zh', 'en']).default('zh'),
+}).strict();
+const knowledgeRequestSchema = z.object({
+  question: z.string().trim().min(5, '请至少用 5 个字符描述智库问题。').max(500),
+  scope: z.enum(['all', 'market', 'cct', 'proposal']).default('all'),
+  language: z.enum(['zh', 'en']).default('zh'),
+}).strict();
 const settingsSchema = z.object({
   brandName: z.string().trim().min(1).max(100),
   heroTitle: z.string().trim().min(1).max(200),
@@ -109,6 +121,8 @@ export function createApp(options = {}) {
   const loginIpLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, limit: 40 });
   const loginAccountLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, limit: 8 });
   const leadLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, limit: 5 });
+  const aiLimiter = createRateLimiter({ windowMs: 15 * 60 * 1000, limit: 20 });
+  const ai = createDeepSeekService({ apiKey: options.deepSeekApiKey ?? process.env.DEEPSEEK_API_KEY ?? '', model: options.deepSeekModel ?? process.env.DEEPSEEK_MODEL ?? 'deepseek-flash' });
 
   app.use((req, res, next) => {
     res.set({
@@ -158,13 +172,25 @@ export function createApp(options = {}) {
 
   app.get('/api/public/bootstrap', (_req, res) => {
     const rows = db.prepare("SELECT * FROM content WHERE status = 'published' ORDER BY featured DESC, created_at ASC, rowid ASC").all();
-    res.json({ settings: readSettings(db), content: rows.map(contentRecord) });
+    res.json({ settings: readSettings(db), content: rows.map(contentRecord), ai: { enabled: ai.configured, mode: ai.configured ? 'deepseek-live' : 'guided-workflow', model: ai.model } });
   });
   app.get('/api/public/content/:slug', (req, res) => {
     const slug = z.string().max(100).parse(req.params.slug);
     const row = db.prepare("SELECT * FROM content WHERE slug = ? AND status = 'published'").get(slug);
     if (!row) throw new HttpError(404, '内容不存在或尚未发布。');
     res.json({ item: contentRecord(row) });
+  });
+  app.post('/api/public/ai/agent', async (req, res) => {
+    limitRequest(aiLimiter, req.ip, res);
+    const input = agentRequestSchema.parse(req.body);
+    res.json({ brief: await ai.agent(input) });
+  });
+  app.post('/api/public/ai/ask', async (req, res) => {
+    limitRequest(aiLimiter, req.ip, res);
+    const input = knowledgeRequestSchema.parse(req.body);
+    const rows = db.prepare("SELECT * FROM content WHERE status = 'published' ORDER BY featured DESC, created_at ASC, rowid ASC").all().map(contentRecord);
+    const sources = rankKnowledge(rows, input.question, input.scope);
+    res.json({ result: await ai.knowledge({ ...input, sources }) });
   });
   app.post('/api/public/leads', (req, res) => {
     limitRequest(leadLimiter, req.ip, res);
