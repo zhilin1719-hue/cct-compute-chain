@@ -48,6 +48,15 @@ try {
   await page.getByRole('heading', { name: '智库回答', exact: true }).waitFor();
   if (!await page.locator('.site-think-card').count()) throw new Error('Static think tank did not show local evidence results');
   report.results.push({ name: 'static AI think tank local evidence retrieval', passed: true });
+  await page.goto(base + '#/', { waitUntil: 'networkidle' });
+  await page.getByRole('button', { name: '打开 AI 智能客服', exact: true }).click();
+  const customerDialog = page.getByRole('dialog', { name: 'CCT AI 智能客服' });
+  await customerDialog.getByRole('button', { name: /我想咨询 AI 外贸/ }).click();
+  await customerDialog.getByText(/与您问题最相关的方向是/).waitFor();
+  if (!await customerDialog.getByRole('link', { name: /AI 外贸增长系统/ }).count()) throw new Error('Static customer service did not show a grounded published source');
+  if (!await customerDialog.getByText(/不构成报价、合同或交付承诺/).isVisible()) throw new Error('Static customer service did not show its answer boundary');
+  await customerDialog.getByRole('button', { name: '关闭智能客服' }).click();
+  report.results.push({ name: 'static AI customer service local grounded answer', passed: true });
   await page.goto(base + '#/opportunities', { waitUntil: 'networkidle' });
   if (!await page.getByText('市场数据', { exact: true }).first().isVisible()) throw new Error('Market evidence label is not visible on the static site.');
   await page.setViewportSize({ width: 1440, height: 1000 });

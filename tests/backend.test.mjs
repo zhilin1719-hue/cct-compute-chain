@@ -103,6 +103,14 @@ test('AI endpoints validate input, preserve evidence sources and degrade transpa
   assert.ok(thinkTank.data.result.sources.length > 0);
   assert.ok(thinkTank.data.result.sources.every((item) => item.status === 'published'));
   assert.ok(thinkTank.data.result.sources.some((item) => item.slug === 'agent-systems' || item.slug === 'customer-operations-agents'));
+  const invalidCustomerService = await f.request('/api/public/ai/customer-service', { method: 'POST', auth: false, body: { question: 'a', language: 'zh' } });
+  assert.equal(invalidCustomerService.status, 400);
+  const customerService = await f.request('/api/public/ai/customer-service', { method: 'POST', auth: false, body: { question: 'AI 漫剧与短剧怎么合作？', language: 'zh' } });
+  assert.equal(customerService.status, 200, JSON.stringify(customerService.data));
+  assert.equal(customerService.data.result.mode, 'local-grounded');
+  assert.match(customerService.data.result.answer, /AI 漫剧与短剧/);
+  assert.ok(customerService.data.result.sources.some((item) => item.slug === 'ai-series-studio'));
+  assert.match(customerService.data.result.disclaimer, /不构成报价、合同或交付承诺/);
   assert.equal(f.app.locals.db.prepare('SELECT COUNT(*) AS count FROM leads').get().count, 0, 'AI input must not be stored as a lead');
 });
 

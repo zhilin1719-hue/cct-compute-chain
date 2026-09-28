@@ -8,6 +8,7 @@ import { registerSeo } from './seo.mjs';
 import { openDatabase, projectDirectory, transaction, publicUser, contentRecord, leadRecord, readSettings, audit } from './db.mjs';
 import { COOKIE_NAME, SESSION_DURATION_MS, hashPassword, verifyPassword, newSessionToken, hashToken, csrfForToken, safeEqual, sessionCookie, createRateLimiter } from './security.mjs';
 import { createDeepSeekService, rankKnowledge } from './deepseek.mjs';
+import { rankCustomerServiceContent } from '../src/customerService.js';
 
 const emailSchema = z.string().trim().email('请输入有效的邮箱地址。').max(254).transform((value) => value.toLowerCase());
 const passwordSchema = z.string().min(12, '密码至少需要 12 个字符。').max(128, '密码不能超过 128 个字符。');
@@ -59,6 +60,11 @@ const agentRequestSchema = z.object({
 const knowledgeRequestSchema = z.object({
   question: z.string().trim().min(5, '请至少用 5 个字符描述智库问题。').max(500),
   scope: z.enum(['all', 'market', 'cct', 'proposal']).default('all'),
+  language: z.enum(['zh', 'en']).default('zh'),
+}).strict();
+const customerServiceRequestSchema = z.object({
+  question: z.string().trim().min(2, '请至少输入 2 个字符。').max(400),
+  context: z.string().trim().max(800).default(''),
   language: z.enum(['zh', 'en']).default('zh'),
 }).strict();
 const settingsSchema = z.object({
@@ -191,6 +197,13 @@ export function createApp(options = {}) {
     const rows = db.prepare("SELECT * FROM content WHERE status = 'published' ORDER BY featured DESC, created_at ASC, rowid ASC").all().map(contentRecord);
     const sources = rankKnowledge(rows, input.question, input.scope);
     res.json({ result: await ai.knowledge({ ...input, sources }) });
+  });
+  app.post('/api/public/ai/customer-service', async (req, res) => {
+    limitRequest(aiLimiter, req.ip, res);
+    const input = customerServiceRequestSchema.parse(req.body);
+    const rows = db.prepare("SELECT * FROM content WHERE status = 'published' ORDER BY featured DESC, created_at ASC, rowid ASC").all().map(contentRecord);
+    const sources = rankCustomerServiceContent(rows, `${input.context}\n${input.question}`);
+    res.json({ result: await ai.customerService({ ...input, sources }) });
   });
   app.post('/api/public/leads', (req, res) => {
     limitRequest(leadLimiter, req.ip, res);

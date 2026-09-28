@@ -104,6 +104,28 @@ try {
   await page.getByRole('heading', { name: '智库回答', exact: true }).waitFor();
   if (!await page.locator('.site-think-card').count()) throw new Error('Think tank did not retain published source records');
   results.push({ name: 'AI think tank question, evidence retrieval and source retention', passed: true });
+  await page.goto(base + '/', { waitUntil: 'networkidle' });
+  const customerLauncher = page.getByRole('button', { name: '打开 AI 智能客服', exact: true });
+  await customerLauncher.click();
+  const customerDialog = page.getByRole('dialog', { name: 'CCT AI 智能客服' });
+  await customerDialog.waitFor();
+  const customerResponse = page.waitForResponse(response => response.url().endsWith('/api/public/ai/customer-service') && response.request().method() === 'POST');
+  await customerDialog.getByRole('button', { name: /AI 漫剧与短剧怎么合作/ }).click();
+  if ((await customerResponse).status() !== 200) throw new Error('AI customer service endpoint did not return a grounded answer');
+  await customerDialog.getByText(/与您问题最相关的方向是/).waitFor();
+  if (!await customerDialog.getByRole('link', { name: /AI 漫剧与短剧工作室/ }).count()) throw new Error('AI customer service did not retain the related published source');
+  if (!await customerDialog.getByText(/不构成报价、合同或交付承诺/).isVisible()) throw new Error('AI customer service boundary is not visible');
+  await page.screenshot({ path: resolve(screenshots, 'customer-service-1440.png'), fullPage: true });
+  await customerDialog.getByRole('button', { name: '关闭智能客服' }).click();
+  if (!await customerLauncher.evaluate(element => element === document.activeElement)) throw new Error('Customer service close did not restore launcher focus');
+  await page.setViewportSize({ width: 390, height: 844 });
+  await customerLauncher.click();
+  const mobileCustomerBounds = await customerDialog.evaluate(element => ({ width: element.getBoundingClientRect().width, height: element.getBoundingClientRect().height, viewportWidth: window.innerWidth, viewportHeight: window.innerHeight }));
+  if (Math.abs(mobileCustomerBounds.width - mobileCustomerBounds.viewportWidth) > 1 || Math.abs(mobileCustomerBounds.height - mobileCustomerBounds.viewportHeight) > 1) throw new Error(`Mobile customer service must fill the viewport: ${JSON.stringify(mobileCustomerBounds)}`);
+  await page.screenshot({ path: resolve(screenshots, 'customer-service-390.png'), fullPage: true });
+  await customerDialog.getByRole('button', { name: '关闭智能客服' }).click();
+  results.push({ name: 'AI customer service grounded answer, boundary, focus recovery and mobile panel', passed: true });
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto(base + '/contact', { waitUntil: 'networkidle' });
   // Form actions are driven by visible labels. Field names are a stable cross-language contract.
   const inputByName = async (name, text) => {

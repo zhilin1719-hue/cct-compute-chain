@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-09-27T22:29:28.056Z",
+  "timestamp": "2026-09-28T05:10:53.059Z",
   "basePath": "/cct-compute-chain/",
   "results": [
     {
@@ -136,6 +136,10 @@
     },
     {
       "name": "static AI think tank local evidence retrieval",
+      "passed": true
+    },
+    {
+      "name": "static AI customer service local grounded answer",
       "passed": true
     },
     {
